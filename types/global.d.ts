@@ -19,8 +19,18 @@ interface EthereumProvider {
   ) => void;
 }
 
+interface IdleDeadline {
+  didTimeout: boolean;
+  timeRemaining(): number;
+}
+
 interface Window {
   ethereum?: EthereumProvider;
   freighter?: FreighterProvider;
   sorobanEvents?: (account: string) => void;
+  requestIdleCallback?: (
+    callback: (deadline: IdleDeadline) => void,
+    options?: { timeout: number }
+  ) => number;
+  cancelIdleCallback?: (id: number) => void;
 }

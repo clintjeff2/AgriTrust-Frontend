@@ -11,6 +11,7 @@ import {
 } from "react";
 import EventEmitter from "eventemitter3";
 import { queryClient } from "@/lib/queryClient";
+import { useWeb3Session } from "@/hooks/useWeb3Session";
 
 const ACCOUNT_SWITCH = "ACCOUNT_SWITCH";
 
@@ -131,6 +132,33 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       setIsSwitching(false);
     }, 200);
   }, []);
+
+  // Handle session expiration from SessionMonitor
+  const handleSessionExpired = useCallback(() => {
+    setAccount(null);
+    setProvider(null);
+    previousAccountRef.current = null;
+    queryClient.clear();
+    if (typeof window !== "undefined") {
+      localStorage.clear();
+      window.location.href = "/login";
+    }
+  }, []);
+
+  // Handle account changes from SessionMonitor
+  const handleMonitorAccountChanged = useCallback((newAccount: string) => {
+    // The native wallet event handlers will handle the account switch
+    // This is just for logging/debugging
+    console.log("SessionMonitor detected account change:", newAccount);
+  }, []);
+
+  // Integrate session monitoring
+  useWeb3Session({
+    account,
+    provider,
+    onSessionExpired: handleSessionExpired,
+    onAccountChanged: handleMonitorAccountChanged,
+  });
 
   useEffect(() => {
     const channel = new AccountChangeChannel();
