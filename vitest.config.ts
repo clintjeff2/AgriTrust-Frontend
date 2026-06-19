@@ -11,6 +11,6 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     include: ["src/**/*.test.ts", "src/**/*.test.tsx", "__tests__/**/*.test.ts", "__tests__/**/*.test.tsx"],
-    setupFiles: ["vitest-canvas-mock"],
+    setupFiles: ["vitest.setup.ts", "vitest-canvas-mock"],
   },
 });
