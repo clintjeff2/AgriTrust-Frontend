@@ -1,4 +1,8 @@
 import * as ed from '@noble/ed25519';
+import crypto from 'crypto';
+
+// Provide sha512 implementation for noble-ed25519
+ed.hashes.sha512 = (message) => crypto.createHash('sha512').update(message).digest();
 
 export interface MockWallet {
   publicKey: string;
