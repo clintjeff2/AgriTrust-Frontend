@@ -1,12 +1,22 @@
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useWallet } from "@/components/providers/WalletContext";
 import * as txStateStore from "@/services/txStateStore";
 import { useCallback } from "react";
+import { useOptimisticMutation } from "@/src/hooks/useOptimisticMutation";
+
+/** A pending deposit that has been optimistically applied to the UI. */
+export interface PendingDeposit {
+  optimisticId: string;
+  amount: string;
+  timestamp: number;
+}
 
 interface EscrowData {
   balance: string;
   milestoneStatus: string;
   certificationValid: boolean;
+  /** Frontend-only field for tracking optimistic pending deposits. */
+  pendingDeposits: PendingDeposit[];
 }
 
 interface DepositParams {
@@ -26,7 +36,9 @@ async function fetchEscrowData(account: string): Promise<EscrowData> {
   if (!response.ok) {
     throw new Error("Failed to fetch escrow data");
   }
-  return response.json();
+  const raw = await response.json();
+  // The API doesn't return pendingDeposits — we manage that on the frontend.
+  return { ...raw, pendingDeposits: [] };
 }
 
 async function submitEscrowDeposit(
@@ -61,7 +73,7 @@ export function useSorobanEscrow() {
     enabled: !!account && !isSwitching,
   });
 
-  const depositMutation = useMutation({
+  const depositMutation = useOptimisticMutation<EscrowData, DepositParams>({
     mutationFn: async (params: DepositParams) => {
       if (!account) throw new Error("No wallet connected");
 
@@ -108,25 +120,78 @@ export function useSorobanEscrow() {
           status: "confirmed",
         });
 
-        return result;
+        // Return the transaction result. The cache is managed separately by the
+        // optimistic updater and will be invalidated/refetched by onSettled.
+        return result as unknown as EscrowData;
       } catch (error) {
-        // Mark as failed on error
+        // Mark as failed on error, merging with existing metadata to preserve
+        // amount and other fields set during the "preparing" save.
+        const existing = txStateStore.get(operationId);
         txStateStore.update(operationId, {
           status: "failed",
           metadata: {
+            ...existing?.metadata,
             errorMessage: error instanceof Error ? error.message : "Unknown error",
           },
         });
         throw error;
       }
     },
+    queryKey: ["soroban", "escrow", account],
+    optimisticUpdater: (variables, currentData, callOptimisticId) => {
+      const base = currentData ?? {
+        balance: "0",
+        milestoneStatus: "unknown",
+        certificationValid: false,
+        pendingDeposits: [],
+      };
+
+      const pendingDeposit: PendingDeposit = {
+        optimisticId: callOptimisticId,
+        amount: variables.amount,
+        timestamp: Date.now(),
+      };
+
+      // Optimistically increment balance and add pending deposit entry.
+      const currentBalance = Number(base.balance);
+      const depositAmount = Number(variables.amount);
+
+      return {
+        ...base,
+        balance: String(currentBalance + depositAmount),
+        pendingDeposits: [...base.pendingDeposits, pendingDeposit],
+      };
+    },
+    rollbackFn: (error, variables, rollbackData) => {
+      // Dispatch a custom event so UI components like InventoryCard can react.
+      // In production this would use a toast notification system.
+      console.error(
+        `[Escrow] Deposit of ${variables.amount} failed: ${error.message}`,
+        { rollbackData }
+      );
+
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(
+          new CustomEvent("escrow-deposit-failed", {
+            detail: {
+              amount: variables.amount,
+              error: error.message,
+              optimisticId: depositMutation.optimisticId ?? "unknown",
+            },
+          })
+        );
+      }
+    },
   });
 
+  // Destructure mutateAsync to avoid recreating the callback when the
+  // mutation result object reference changes (mutateAsync is stable).
+  const { mutateAsync } = depositMutation;
   const deposit = useCallback(
     (params: DepositParams) => {
-      return depositMutation.mutateAsync(params);
+      return mutateAsync(params);
     },
-    [depositMutation]
+    [mutateAsync]
   );
 
   return {
