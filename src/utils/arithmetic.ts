@@ -78,12 +78,20 @@ export class Decimal {
     const absolute = isNegative ? trimmed.slice(1) : trimmed;
     
     const parts = absolute.split('.');
-    const integerPart = parts[0] || '0';
+    let integerPart = parts[0] || '0';
     const fractionalPart = parts[1] || '';
     
     // Pad or truncate fractional part to match scale
     const paddedFraction = fractionalPart.padEnd(scale, '0').slice(0, scale);
-    const scaledValue = integerPart + paddedFraction;
+    
+    // For values like "0.1", we want "1000000" not "01000000"
+    // Remove leading zeros, but if integer is all zeros, keep one zero before fraction
+    integerPart = integerPart.replace(/^0+/, '') || '0';
+    
+    // If integer part is just "0" and we have a fraction, don't include the zero
+    const scaledValue = (integerPart === '0') 
+      ? paddedFraction 
+      : integerPart + paddedFraction;
     
     return new Decimal(isNegative ? '-' + scaledValue : scaledValue, scale);
   }

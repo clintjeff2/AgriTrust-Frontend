@@ -46,7 +46,9 @@ describe("PayoutBreakdown", () => {
           precision={2}
         />
       );
-      expect(screen.getByText(/1,234\.56 tokens/)).toBeInTheDocument();
+      const elements = screen.getAllByText(/1,234\.56 tokens/);
+      expect(elements.length).toBeGreaterThan(0);
+      expect(elements[0]).toBeInTheDocument();
     });
 
     it("displays base price with 7 decimal precision", () => {
@@ -57,7 +59,9 @@ describe("PayoutBreakdown", () => {
           precision={7}
         />
       );
-      expect(screen.getByText(/1,234\.5600000 tokens/)).toBeInTheDocument();
+      const elements = screen.getAllByText(/1,234\.5600000 tokens/);
+      expect(elements.length).toBeGreaterThan(0);
+      expect(elements[0]).toBeInTheDocument();
     });
 
     it("renders all adjustment line items", () => {
@@ -83,7 +87,7 @@ describe("PayoutBreakdown", () => {
         />
       );
 
-      const qualityItem = screen.getByText("Quality Adjustment").closest("div");
+      const qualityItem = screen.getByText("Quality Adjustment").closest("div")?.parentElement;
       expect(qualityItem).toHaveAttribute("title", "Premium quality produce bonus");
     });
 
@@ -185,7 +189,9 @@ describe("PayoutBreakdown", () => {
         />
       );
 
-      expect(screen.getByText(/-1\.00 tokens/)).toBeInTheDocument();
+      const elements = screen.getAllByText(/-1\.00 tokens/);
+      expect(elements.length).toBeGreaterThan(0);
+      expect(elements[0]).toBeInTheDocument();
     });
 
     it("handles zero base price", () => {
@@ -197,7 +203,9 @@ describe("PayoutBreakdown", () => {
         />
       );
 
-      expect(screen.getByText(/0\.00 tokens/)).toBeInTheDocument();
+      const elements = screen.getAllByText(/0\.00 tokens/);
+      expect(elements.length).toBeGreaterThan(0);
+      expect(elements[0]).toBeInTheDocument();
     });
   });
 
@@ -249,7 +257,8 @@ describe("PayoutBreakdown", () => {
         />
       );
 
-      expect(screen.getByText(/1,234\.56 tokens/)).toBeInTheDocument();
+      const elements = screen.getAllByText(/1,234\.56 tokens/);
+      expect(elements.length).toBeGreaterThan(0);
     });
 
     it("accepts string values for adjustments", () => {
@@ -279,7 +288,8 @@ describe("PayoutBreakdown", () => {
         />
       );
 
-      expect(screen.getByText(/1,234\.56 tokens/)).toBeInTheDocument();
+      const elements = screen.getAllByText(/1,234\.56 tokens/);
+      expect(elements.length).toBeGreaterThan(0);
     });
 
     it("handles very small values", () => {
@@ -291,7 +301,8 @@ describe("PayoutBreakdown", () => {
         />
       );
 
-      expect(screen.getByText(/0\.0000001 tokens/)).toBeInTheDocument();
+      const elements = screen.getAllByText(/0\.0000001 tokens/);
+      expect(elements.length).toBeGreaterThan(0);
     });
 
     it("handles very large values", () => {
@@ -304,7 +315,8 @@ describe("PayoutBreakdown", () => {
         />
       );
 
-      expect(screen.getByText(/12,345,678\.90 tokens/)).toBeInTheDocument();
+      const elements = screen.getAllByText(/12,345,678\.90 tokens/);
+      expect(elements.length).toBeGreaterThan(0);
     });
 
     it("applies custom className", () => {

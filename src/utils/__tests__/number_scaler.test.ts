@@ -232,15 +232,15 @@ describe("number_scaler", () => {
       
       // Quality bonus: +0.50
       const withQuality = addSorobanValues(basePrice, 5000000n);
-      expect(withQuality).toBe(12395600000n);
+      expect(withQuality).toBe(12350600000n); // 1234.56 + 0.50 = 1235.06
       
       // Transport fee: -0.2345
       const withTransport = subtractSorobanValues(withQuality, 2345000n);
-      expect(withTransport).toBe(12393255000n);
+      expect(withTransport).toBe(12348255000n); // 1235.06 - 0.2345 = 1234.8255
       
       // Insurance fee: -0.10
       const final = subtractSorobanValues(withTransport, 1000000n);
-      expect(final).toBe(12392255000n);
+      expect(final).toBe(12347255000n); // 1234.8255 - 0.10 = 1234.7255
       
       // Format final result
       const formatted = formatSorobanValue(final, 2);
