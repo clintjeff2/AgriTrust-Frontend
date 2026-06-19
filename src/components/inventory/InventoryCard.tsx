@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import type { PendingDeposit } from "@/hooks/useSorobanEscrow";
+import { Decimal } from "@/src/utils/arithmetic";
 
 interface EscrowDisplayData {
   balance: string;
@@ -102,10 +103,14 @@ export default function InventoryCard({
   }
 
   const pendingCount = data.pendingDeposits.length;
-  const totalPending = data.pendingDeposits.reduce(
-    (sum, d) => sum + Number(d.amount),
-    0
-  );
+  
+  // Calculate total pending using precise Decimal arithmetic
+  let totalPendingDecimal = Decimal.fromString("0", 7);
+  for (const deposit of data.pendingDeposits) {
+    const amountDecimal = Decimal.fromString(deposit.amount, 7);
+    totalPendingDecimal = totalPendingDecimal.add(amountDecimal);
+  }
+  const totalPending = totalPendingDecimal.format(2);
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
@@ -129,7 +134,7 @@ export default function InventoryCard({
       <div className="mb-4">
         <p className="text-sm text-gray-500 dark:text-gray-400">Balance</p>
         <p className="text-3xl font-bold text-gray-900 dark:text-white">
-          {Number(data.balance).toLocaleString()} tokens
+          {Decimal.fromString(data.balance, 7).format(2)} tokens
         </p>
       </div>
 
@@ -171,7 +176,7 @@ export default function InventoryCard({
                     <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-amber-500" />
                   </span>
                   <span className="text-sm font-medium text-amber-900 dark:text-amber-300">
-                    +{Number(deposit.amount).toLocaleString()} tokens
+                    +{Decimal.fromString(deposit.amount, 7).format(2)} tokens
                   </span>
                 </div>
                 <span className="text-xs text-amber-600 dark:text-amber-400">
@@ -181,9 +186,9 @@ export default function InventoryCard({
             ))}
           </ul>
 
-          {totalPending > 0 && (
+          {totalPending && (
             <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">
-              Total pending: +{totalPending.toLocaleString()} tokens
+              Total pending: +{totalPending} tokens
               {isDepositing && (
                 <span className="ml-1 inline-block animate-pulse">
                   &hellip;
