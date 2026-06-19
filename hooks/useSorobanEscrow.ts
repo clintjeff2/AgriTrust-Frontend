@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useWallet } from "@/components/providers/WalletContext";
 import * as txStateStore from "@/services/txStateStore";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useOptimisticMutation } from "@/src/hooks/useOptimisticMutation";
 
 /** A pending deposit that has been optimistically applied to the UI. */
@@ -66,6 +66,8 @@ async function submitEscrowDeposit(
 
 export function useSorobanEscrow() {
   const { account, isSwitching } = useWallet();
+  const [showPreflightModal, setShowPreflightModal] = useState(false);
+  const [pendingDeposit, setPendingDeposit] = useState<DepositParams | null>(null);
 
   const query = useQuery<EscrowData>({
     queryKey: ["soroban", "escrow", account],
@@ -187,19 +189,50 @@ export function useSorobanEscrow() {
   // Destructure mutateAsync to avoid recreating the callback when the
   // mutation result object reference changes (mutateAsync is stable).
   const { mutateAsync } = depositMutation;
+  
+  // deposit() - Shows preflight modal (for UI flows)
   const deposit = useCallback(
     (params: DepositParams) => {
+      // Store params and show preflight modal
+      setPendingDeposit(params);
+      setShowPreflightModal(true);
+    },
+    []
+  );
+
+  // depositDirect() - Bypasses modal and executes directly (for tests and programmatic use)
+  const depositDirect = useCallback(
+    async (params: DepositParams) => {
       return mutateAsync(params);
     },
     [mutateAsync]
   );
+
+  const confirmDeposit = useCallback(() => {
+    if (pendingDeposit) {
+      setShowPreflightModal(false);
+      depositMutation.mutate(pendingDeposit);
+      setPendingDeposit(null);
+    }
+  }, [pendingDeposit, depositMutation]);
+
+  const cancelDeposit = useCallback(() => {
+    setShowPreflightModal(false);
+    setPendingDeposit(null);
+  }, []);
 
   return {
     escrowData: query.data,
     isLoading: query.isLoading || isSwitching,
     error: query.error,
     deposit,
+    depositDirect,
     isDepositing: depositMutation.isPending,
     depositError: depositMutation.error,
+    // Preflight modal state
+    showPreflightModal,
+    pendingDeposit,
+    confirmDeposit,
+    cancelDeposit,
   };
 }

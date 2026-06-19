@@ -74,8 +74,8 @@ describe("Transaction Recovery Integration", () => {
       expect(escrowResult.current.isLoading).toBe(false);
     });
 
-    // Start deposit (don't await - simulate interruption)
-    escrowResult.current.deposit({
+    // Start deposit using depositDirect (don't await - simulate interruption)
+    escrowResult.current.depositDirect({
       amount: "500",
       metadata: { purpose: "integration_test" },
     });

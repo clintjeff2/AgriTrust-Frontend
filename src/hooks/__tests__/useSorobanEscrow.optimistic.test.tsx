@@ -80,10 +80,10 @@ describe("useSorobanEscrow — optimistic deposits", () => {
     expect(result.current.escrowData?.balance).toBe("5000");
     expect(result.current.escrowData?.pendingDeposits).toEqual([]);
 
-    // Trigger deposit — the optimistic update should apply within 50ms.
+    // Trigger deposit using depositDirect (bypasses modal for testing)
     // We await the promise to avoid unhandled rejections; it should resolve.
     await act(async () => {
-      await result.current.deposit({ amount: "200" });
+      await result.current.depositDirect({ amount: "200" });
     });
 
     // After successful deposit, balance should be optimistically updated
@@ -118,10 +118,10 @@ describe("useSorobanEscrow — optimistic deposits", () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    // Trigger a failing deposit — catch the expected rejection.
+    // Trigger a failing deposit using depositDirect — catch the expected rejection.
     await act(async () => {
       await expect(
-        result.current.deposit({ amount: "300" })
+        result.current.depositDirect({ amount: "300" })
       ).rejects.toThrow("Soroban RPC timeout");
     });
 
@@ -160,7 +160,7 @@ describe("useSorobanEscrow — optimistic deposits", () => {
 
     await act(async () => {
       await expect(
-        result.current.deposit({ amount: "99999" })
+        result.current.depositDirect({ amount: "99999" })
       ).rejects.toThrow("Insufficient balance");
     });
 
@@ -198,7 +198,7 @@ describe("useSorobanEscrow — optimistic deposits", () => {
     // Await the rejected promise so the onError handler runs fully.
     await act(async () => {
       await expect(
-        result.current.deposit({ amount: "150" })
+        result.current.depositDirect({ amount: "150" })
       ).rejects.toThrow("Network down");
     });
 
@@ -238,7 +238,7 @@ describe("useSorobanEscrow — optimistic deposits", () => {
     });
 
     await act(async () => {
-      await result.current.deposit({ amount: "400" });
+      await result.current.depositDirect({ amount: "400" });
     });
 
     // Wait for deposit to complete (includes 2s simulated confirmation delay)
@@ -280,7 +280,7 @@ describe("useSorobanEscrow — optimistic deposits", () => {
     });
 
     await act(async () => {
-      await result.current.deposit({ amount: "50" });
+      await result.current.depositDirect({ amount: "50" });
     });
 
     await waitFor(() => {
