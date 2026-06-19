@@ -244,7 +244,7 @@ describe("number_scaler", () => {
       
       // Format final result
       const formatted = formatSorobanValue(final, 2);
-      expect(formatted).toBe("1,239.23"); // Precise result without floating-point errors
+      expect(formatted).toBe("1,234.73"); // 1234.7255 rounded to 2 decimals = 1,234.73
     });
 
     it("calculates multi-step price adjustments", () => {
