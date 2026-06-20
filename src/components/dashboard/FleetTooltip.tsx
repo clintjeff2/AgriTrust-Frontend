@@ -1,6 +1,8 @@
 "use client";
 
+import type { ReactNode } from "react";
 import type { FleetAsset } from "@/src/types/fleet";
+import { SafeText } from "@/src/components/common/SafeText";
 
 interface FleetTooltipProps {
   asset: FleetAsset | null;
@@ -38,10 +40,10 @@ export function FleetTooltip({ asset, x, y }: FleetTooltipProps) {
   return (
     <div style={style}>
       <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 6 }}>
-        {asset.id}
+        <SafeText>{asset.id}</SafeText>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-        <Row label="Type" value={asset.assetType} />
+        <Row label="Type" value={<SafeText>{asset.assetType}</SafeText>} />
         <Row
           label="Temperature"
           value={`${asset.temperature}°C`}
@@ -56,7 +58,7 @@ export function FleetTooltip({ asset, x, y }: FleetTooltipProps) {
         <Row label="Cargo" value={String(asset.cargoCount)} />
         <Row label="ETA" value={formatETA(asset.eta)} />
         <Row label="GPS" value={`${asset.lastGps.lat.toFixed(4)}, ${asset.lastGps.lng.toFixed(4)}`} />
-        <Row label="Insurance" value={asset.insuranceStatus} />
+        <Row label="Insurance" value={<SafeText>{asset.insuranceStatus}</SafeText>} />
       </div>
     </div>
   );
@@ -68,7 +70,7 @@ function Row({
   color,
 }: {
   label: string;
-  value: string;
+  value: ReactNode;
   color?: string;
 }) {
   return (
