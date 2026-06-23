@@ -1,8 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useLocale } from "@/src/hooks/useLocale";
+import { InternationalizedText } from "@/src/components/common/InternationalizedText";
 
 export function QRCodeViewer() {
+  const { t } = useLocale();
   const [qrData, setQrData] = useState("");
   const [qrSvg, setQrSvg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -31,13 +34,13 @@ export function QRCodeViewer() {
   return (
     <div className="space-y-4">
       <div className="rounded-xl border border-zinc-200 p-6 dark:border-zinc-800">
-        <h3 className="mb-4 text-sm font-medium text-zinc-500">Device Pairing QR</h3>
+        <InternationalizedText as="h3" id="devices.qr.title" className="mb-4 text-sm font-medium text-zinc-500" />
         <div className="space-y-3">
           <input
             type="text"
             value={qrData}
             onChange={(e) => setQrData(e.target.value)}
-            placeholder="Device pairing data…"
+            placeholder={t("devices.qr.placeholder")}
             className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
           />
           <div className="flex gap-3">
@@ -46,14 +49,14 @@ export function QRCodeViewer() {
               disabled={loading}
               className="rounded-lg bg-zinc-600 px-4 py-2 text-sm text-white transition-colors hover:bg-zinc-700 disabled:opacity-50"
             >
-              Compress
+              <InternationalizedText id="devices.qr.compress" />
             </button>
             <button
               onClick={generateQR}
               disabled={loading}
               className="rounded-lg bg-emerald-600 px-4 py-2 text-sm text-white transition-colors hover:bg-emerald-700 disabled:opacity-50"
             >
-              {loading ? "Generating…" : "Generate QR"}
+              {loading ? t("devices.qr.generating") : t("devices.qr.generate")}
             </button>
           </div>
           {qrSvg && <div className="flex justify-center" dangerouslySetInnerHTML={{ __html: qrSvg }} />}

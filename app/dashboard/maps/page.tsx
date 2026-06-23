@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { InternationalizedText } from "@/src/components/common/InternationalizedText";
 
 const FarmMap = dynamic(
   () => import("./_components/FarmMap").then((m) => ({ default: m.FarmMap })),
@@ -15,7 +16,7 @@ const YieldHeatmap = dynamic(
 export default function MapsPage() {
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Farm Maps</h1>
+      <InternationalizedText as="h1" id="maps.title" className="text-2xl font-bold" />
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <FarmMap />
         <YieldHeatmap />

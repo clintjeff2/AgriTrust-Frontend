@@ -3,6 +3,8 @@
 import { useState, useCallback } from "react";
 import { saveAuditOffline } from "@/src/services/indexedDbStore";
 import { useOfflineSync } from "@/src/hooks/useOfflineSync";
+import { useLocale } from "@/src/hooks/useLocale";
+import { InternationalizedText } from "@/src/components/common/InternationalizedText";
 
 interface AuditFormData {
   inspectorId: string;
@@ -25,6 +27,7 @@ const EMPTY_FORM: AuditFormData = {
 };
 
 export default function AuditForm() {
+  const { t } = useLocale();
   const [form, setForm] = useState<AuditFormData>(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
   const [lastSavedId, setLastSavedId] = useState<string | null>(null);
@@ -76,7 +79,7 @@ export default function AuditForm() {
       setForm(EMPTY_FORM);
       await refreshStats();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save audit.");
+      setError(err instanceof Error ? err.message : t("audit.saveFailed"));
     } finally {
       setSubmitting(false);
     }
@@ -86,9 +89,11 @@ export default function AuditForm() {
     <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
       {/* Header with online/offline badge */}
       <div className="mb-5 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-          Farm Audit
-        </h2>
+        <InternationalizedText
+          as="h2"
+          id="audit.title"
+          className="text-lg font-semibold text-gray-900 dark:text-white"
+        />
         <span
           className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${
             isOnline
@@ -102,7 +107,7 @@ export default function AuditForm() {
               isOnline ? "bg-green-500" : "bg-yellow-400"
             }`}
           />
-          {isOnline ? "Online" : "Offline — will sync on reconnect"}
+          {isOnline ? t("audit.online") : t("audit.offline")}
         </span>
       </div>
 
@@ -111,8 +116,7 @@ export default function AuditForm() {
           role="alert"
           className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-300"
         >
-          Local storage is over 95% full. Please sync or clear old records
-          before submitting new audits.
+          {t("audit.storageFull")}
         </div>
       )}
 
@@ -121,8 +125,8 @@ export default function AuditForm() {
           role="status"
           className="mb-4 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-300"
         >
-          Audit saved locally (ID: {lastSavedId}).{" "}
-          {isOnline ? "Uploading now…" : "Will upload when online."}
+          {t("audit.savedLocally", { id: lastSavedId })}{" "}
+          {isOnline ? t("audit.uploadingNow") : t("audit.willUpload")}
         </div>
       )}
 
@@ -142,7 +146,7 @@ export default function AuditForm() {
               htmlFor="inspectorId"
               className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
             >
-              Inspector ID
+              {t("audit.inspectorId")}
             </label>
             <input
               id="inspectorId"
@@ -160,7 +164,7 @@ export default function AuditForm() {
               htmlFor="farmId"
               className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
             >
-              Farm ID
+              {t("audit.farmId")}
             </label>
             <input
               id="farmId"
@@ -181,7 +185,7 @@ export default function AuditForm() {
               htmlFor="gpsLat"
               className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
             >
-              GPS Latitude
+              {t("audit.gpsLat")}
             </label>
             <input
               id="gpsLat"
@@ -200,7 +204,7 @@ export default function AuditForm() {
               htmlFor="gpsLng"
               className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
             >
-              GPS Longitude
+              {t("audit.gpsLng")}
             </label>
             <input
               id="gpsLng"
@@ -221,7 +225,7 @@ export default function AuditForm() {
             htmlFor="notes"
             className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
           >
-            Inspection Notes
+            {t("audit.notes")}
           </label>
           <textarea
             id="notes"
@@ -240,7 +244,7 @@ export default function AuditForm() {
             htmlFor="signature"
             className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
           >
-            Inspector Signature
+            {t("audit.signature")}
           </label>
           <input
             id="signature"
@@ -259,8 +263,8 @@ export default function AuditForm() {
             htmlFor="photos"
             className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
           >
-            Photos{" "}
-            <span className="font-normal text-gray-500">(max 100 KB each)</span>
+            {t("audit.photos")}{" "}
+            <span className="font-normal text-gray-500">{t("audit.photosHint")}</span>
           </label>
           <input
             id="photos"
@@ -272,8 +276,7 @@ export default function AuditForm() {
           />
           {form.photos.length > 0 && (
             <p className="mt-1 text-xs text-gray-500">
-              {form.photos.length} photo{form.photos.length !== 1 ? "s" : ""}{" "}
-              attached
+              {t("audit.photosAttached", { count: form.photos.length })}
             </p>
           )}
         </div>
@@ -283,7 +286,7 @@ export default function AuditForm() {
           disabled={submitting || isStorageFull}
           className="w-full rounded-md bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {submitting ? "Saving…" : "Save Audit"}
+          {submitting ? t("audit.saving") : t("audit.save")}
         </button>
       </form>
     </div>

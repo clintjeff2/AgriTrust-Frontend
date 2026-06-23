@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useCallback, useEffect, useState } from "react";
+import { InternationalizedText } from "@/src/components/common/InternationalizedText";
 
 function useLoadingProgress() {
   const [progress, setProgress] = useState(0);
@@ -45,7 +46,7 @@ export function LoadingBoundary({ children }: { children: React.ReactNode }) {
           <div className="flex min-h-[60vh] items-center justify-center">
             <div className="space-y-4 text-center">
               <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
-              <p className="text-sm text-zinc-500">Loading section…</p>
+              <InternationalizedText as="p" id="common.loadingSection" className="text-sm text-zinc-500" />
             </div>
           </div>
         </>

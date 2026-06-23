@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { InternationalizedText } from "@/src/components/common/InternationalizedText";
 
 export function FarmMap() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -36,7 +37,7 @@ export function FarmMap() {
 
   return (
     <div className="rounded-xl border border-zinc-200 p-6 dark:border-zinc-800">
-      <h3 className="mb-4 text-sm font-medium text-zinc-500">Farm Map</h3>
+      <InternationalizedText as="h3" id="maps.farmMap.title" className="mb-4 text-sm font-medium text-zinc-500" />
       <div ref={containerRef} className="h-[400px] w-full rounded-lg" />
     </div>
   );

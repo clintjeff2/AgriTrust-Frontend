@@ -2,6 +2,7 @@
 
 import { Decimal } from "@/src/utils/arithmetic";
 import { useState } from "react";
+import { useLocale } from "@/src/hooks/useLocale";
 
 /**
  * Props for PricePanel component.
@@ -46,6 +47,7 @@ export default function PricePanel({
   unit = "tokens",
   className = "",
 }: PricePanelProps) {
+  const { t } = useLocale();
   const [precision, setPrecision] = useState<2 | 7>(initialPrecision);
 
   // Convert price to Decimal
@@ -86,9 +88,9 @@ export default function PricePanel({
         <button
           onClick={togglePrecision}
           className="rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-          title={`Switch to ${precision === 2 ? "detailed" : "standard"} view`}
+          title={t("price.switchView", { mode: precision === 2 ? "detailed" : "standard" })}
         >
-          {precision === 2 ? "Show Full" : "Show Less"}
+          {precision === 2 ? t("price.showFull") : t("price.showLess")}
         </button>
       </div>
 
@@ -147,7 +149,7 @@ export default function PricePanel({
             {priceChangePercent}%
           </span>
           <span className="text-xs text-gray-500 dark:text-gray-400">
-            vs. previous
+            {t("price.vsPrevious")}
           </span>
         </div>
       )}
@@ -156,7 +158,7 @@ export default function PricePanel({
       {precision === 7 && (
         <div className="mt-4 rounded-lg bg-blue-50 px-3 py-2 dark:bg-blue-900/20">
           <p className="text-xs text-blue-700 dark:text-blue-300">
-            Showing exact on-chain precision (7 decimals)
+            {t("price.exactPrecision")}
           </p>
         </div>
       )}

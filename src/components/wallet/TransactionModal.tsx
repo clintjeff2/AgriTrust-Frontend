@@ -21,6 +21,7 @@ import {
   formatNumber,
   formatBytes,
 } from '@/src/utils/feeFormatter';
+import { useLocale } from '@/src/hooks/useLocale';
 
 export interface TransactionModalProps {
   isOpen: boolean;
@@ -42,9 +43,11 @@ export function TransactionModal({
   functionName,
   args,
   sourceAccount,
-  title = 'Confirm Transaction',
+  title,
   description,
 }: TransactionModalProps) {
+  const { t } = useLocale();
+  const displayTitle = title ?? t('tx.modal.defaultTitle');
   const [showDetails, setShowDetails] = useState(false);
   const [feeDisplay, setFeeDisplay] = useState<string>('');
 
@@ -77,7 +80,7 @@ export function TransactionModal({
       <div className="w-full max-w-lg rounded-lg bg-white shadow-xl">
         {/* Header */}
         <div className="border-b border-gray-200 px-6 py-4">
-          <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+          <h2 className="text-xl font-semibold text-gray-900">{displayTitle}</h2>
           {description && (
             <p className="mt-1 text-sm text-gray-600">{description}</p>
           )}
@@ -113,14 +116,14 @@ export function TransactionModal({
             onClick={onClose}
             className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md border border-gray-300"
           >
-            Cancel
+            {t('common.cancel')}
           </button>
           <button
             onClick={onConfirm}
             disabled={simulation.state === 'simulating'}
             className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-md"
           >
-            {simulation.state === 'timeout' ? 'Proceed Anyway' : 'Confirm & Sign'}
+            {simulation.state === 'timeout' ? t('tx.modal.proceedAnyway') : t('tx.modal.confirm')}
           </button>
         </div>
       </div>
@@ -129,11 +132,12 @@ export function TransactionModal({
 }
 
 function SimulatingState() {
+  const { t } = useLocale();
   return (
     <div className="flex flex-col items-center justify-center py-8">
       <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600" />
-      <p className="mt-4 text-sm text-gray-600">Simulating transaction...</p>
-      <p className="mt-1 text-xs text-gray-500">Calculating fees and resource usage</p>
+      <p className="mt-4 text-sm text-gray-600">{t('tx.modal.simulating')}</p>
+      <p className="mt-1 text-xs text-gray-500">{t('tx.modal.simulatingHint')}</p>
     </div>
   );
 }
@@ -146,6 +150,7 @@ interface ReadyStateProps {
 }
 
 function ReadyState({ simulation, feeDisplay, showDetails, onToggleDetails }: ReadyStateProps) {
+  const { t } = useLocale();
   const { result } = simulation;
   if (!result) return null;
 
@@ -156,20 +161,20 @@ function ReadyState({ simulation, feeDisplay, showDetails, onToggleDetails }: Re
     <div className="space-y-4">
       {/* Fee Display */}
       <div className="rounded-lg bg-blue-50 p-4">
-        <div className="text-sm font-medium text-blue-900">Estimated Resource Fee</div>
+        <div className="text-sm font-medium text-blue-900">{t('tx.modal.estimatedFee')}</div>
         <div className="mt-1 text-2xl font-bold text-blue-700">{feeDisplay}</div>
         <div className="mt-1 text-xs text-blue-600">
-          {result.minResourceFee.toString()} stroops
+          {t('tx.modal.stroops', { value: result.minResourceFee.toString() })}
         </div>
       </div>
 
       {/* Resource Breakdown */}
       <div className="space-y-3">
-        <h3 className="text-sm font-semibold text-gray-900">Resource Usage</h3>
+        <h3 className="text-sm font-semibold text-gray-900">{t('tx.modal.resourceUsage')}</h3>
 
         {/* CPU Instructions */}
         <ResourceBar
-          label="CPU Instructions"
+          label={t('tx.modal.cpu')}
           value={result.instructions}
           max={SOROBAN_LIMITS.maxInstructions}
           percent={usage.cpuPercent}
@@ -178,7 +183,7 @@ function ReadyState({ simulation, feeDisplay, showDetails, onToggleDetails }: Re
 
         {/* Storage Read */}
         <ResourceBar
-          label="Storage Read"
+          label={t('tx.modal.storageRead')}
           value={result.readBytes}
           max={SOROBAN_LIMITS.maxReadBytes}
           percent={usage.readBytesPercent}
@@ -188,7 +193,7 @@ function ReadyState({ simulation, feeDisplay, showDetails, onToggleDetails }: Re
 
         {/* Storage Write */}
         <ResourceBar
-          label="Storage Write"
+          label={t('tx.modal.storageWrite')}
           value={result.writeBytes}
           max={SOROBAN_LIMITS.maxWriteBytes}
           percent={usage.writeBytesPercent}
@@ -198,8 +203,11 @@ function ReadyState({ simulation, feeDisplay, showDetails, onToggleDetails }: Re
 
         {/* Ledger Entries */}
         <div className="text-xs text-gray-600">
-          <span className="font-medium">Ledger Entries:</span>{' '}
-          {result.ledgerEntryReads} read, {result.ledgerEntryWrites} write
+          <span className="font-medium">{t('tx.modal.ledgerEntries')}</span>{' '}
+          {t('tx.modal.ledgerEntriesValue', {
+            reads: result.ledgerEntryReads,
+            writes: result.ledgerEntryWrites,
+          })}
         </div>
       </div>
 
@@ -208,7 +216,7 @@ function ReadyState({ simulation, feeDisplay, showDetails, onToggleDetails }: Re
         onClick={onToggleDetails}
         className="text-sm text-blue-600 hover:text-blue-700 font-medium"
       >
-        {showDetails ? '▼ Hide Details' : '▶ View Details'}
+        {showDetails ? t('tx.modal.hideDetails') : t('tx.modal.viewDetails')}
       </button>
 
       {/* Raw Simulation JSON */}
@@ -233,6 +241,7 @@ interface ResourceBarProps {
 }
 
 function ResourceBar({ label, value, max, percent, color, formatter = formatNumber }: ResourceBarProps) {
+  const { t } = useLocale();
   const colorClasses = {
     green: 'bg-green-500',
     yellow: 'bg-yellow-500',
@@ -244,7 +253,11 @@ function ResourceBar({ label, value, max, percent, color, formatter = formatNumb
       <div className="flex justify-between text-xs text-gray-600 mb-1">
         <span className="font-medium">{label}</span>
         <span>
-          {formatter(value)} / {formatter(max)} ({percent.toFixed(1)}%)
+          {t('tx.modal.resourceBarValue', {
+            value: formatter(value),
+            max: formatter(max),
+            percent: percent.toFixed(1),
+          })}
         </span>
       </div>
       <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -258,6 +271,7 @@ function ResourceBar({ label, value, max, percent, color, formatter = formatNumb
 }
 
 function TimeoutState({ onRetry }: { onRetry: () => void }) {
+  const { t } = useLocale();
   return (
     <div className="py-6 text-center">
       <div className="mx-auto h-12 w-12 text-yellow-500">
@@ -270,22 +284,20 @@ function TimeoutState({ onRetry }: { onRetry: () => void }) {
           />
         </svg>
       </div>
-      <h3 className="mt-2 text-sm font-medium text-gray-900">Simulation Timed Out</h3>
-      <p className="mt-1 text-sm text-gray-500">
-        The simulation took too long to complete. You can proceed with default fee parameters or
-        retry the simulation.
-      </p>
+      <h3 className="mt-2 text-sm font-medium text-gray-900">{t('tx.modal.timeoutTitle')}</h3>
+      <p className="mt-1 text-sm text-gray-500">{t('tx.modal.timeoutBody')}</p>
       <button
         onClick={onRetry}
         className="mt-4 text-sm text-blue-600 hover:text-blue-700 font-medium"
       >
-        Retry Simulation
+        {t('tx.modal.retry')}
       </button>
     </div>
   );
 }
 
 function ErrorState({ error, onRetry }: { error: { code: string; message: string }; onRetry: () => void }) {
+  const { t } = useLocale();
   return (
     <div className="py-6 text-center">
       <div className="mx-auto h-12 w-12 text-red-500">
@@ -298,14 +310,14 @@ function ErrorState({ error, onRetry }: { error: { code: string; message: string
           />
         </svg>
       </div>
-      <h3 className="mt-2 text-sm font-medium text-gray-900">Simulation Failed</h3>
+      <h3 className="mt-2 text-sm font-medium text-gray-900">{t('tx.modal.errorTitle')}</h3>
       <p className="mt-1 text-sm text-gray-500">{error.message}</p>
-      <p className="mt-1 text-xs text-gray-400">Error Code: {error.code}</p>
+      <p className="mt-1 text-xs text-gray-400">{t('tx.modal.errorCode', { code: error.code })}</p>
       <button
         onClick={onRetry}
         className="mt-4 text-sm text-blue-600 hover:text-blue-700 font-medium"
       >
-        Retry Simulation
+        {t('tx.modal.retry')}
       </button>
     </div>
   );

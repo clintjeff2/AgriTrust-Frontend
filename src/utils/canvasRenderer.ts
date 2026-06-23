@@ -57,9 +57,19 @@ export function setupCanvas(
   return ctx;
 }
 
+export const DEFAULT_HEADER_LABELS = [
+  "Asset ID",
+  "Type",
+  "Temp",
+  "Status",
+  "Cargo",
+  "ETA",
+] as const;
+
 export function drawHeader(
   ctx: CanvasRenderingContext2D,
   width: number,
+  labels: readonly string[] = DEFAULT_HEADER_LABELS,
 ): void {
   ctx.fillStyle = COLORS.headerBg;
   ctx.fillRect(0, 0, width, HEADER_HEIGHT);
@@ -68,7 +78,6 @@ export function drawHeader(
   ctx.font = "600 11px Inter, system-ui, sans-serif";
   ctx.textBaseline = "middle";
 
-  const labels = ["Asset ID", "Type", "Temp", "Status", "Cargo", "ETA"];
   for (let i = 0; i < COLUMN_COUNT; i++) {
     const x = i * CELL_WIDTH + CELL_PADDING;
     ctx.fillText(labels[i], x, HEADER_HEIGHT / 2);

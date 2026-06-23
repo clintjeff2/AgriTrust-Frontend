@@ -8,8 +8,10 @@
 import { useState } from "react";
 import { useTxRetryQueue } from "@/hooks/useTxRetryQueue";
 import type { RecoveredTransaction } from "@/hooks/useTxRetryQueue";
+import { useLocale } from "@/src/hooks/useLocale";
 
 function TransactionStatusBadge({ status }: { status: string }) {
+  const { t } = useLocale();
   const statusColors: Record<string, string> = {
     preparing: "bg-gray-200 text-gray-800",
     broadcasting: "bg-blue-200 text-blue-800",
@@ -25,7 +27,7 @@ function TransactionStatusBadge({ status }: { status: string }) {
     <span
       className={`px-2 py-1 rounded text-xs font-medium ${color}`}
     >
-      {status.replace(/_/g, " ")}
+      {t("txbanner.status", { status })}
     </span>
   );
 }
@@ -39,12 +41,13 @@ function TransactionItem({
   onDismiss: (id: string) => void;
   onRetry: (id: string) => void;
 }) {
+  const { t } = useLocale();
   return (
     <div className="flex items-center justify-between p-3 bg-gray-50 rounded border border-gray-200">
       <div className="flex-1">
         <div className="flex items-center gap-2 mb-1">
           <span className="text-sm font-medium text-gray-900">
-            {tx.metadata.operationType || "Transaction"}
+            {tx.metadata.operationType || t("txbanner.txDefault")}
           </span>
           <TransactionStatusBadge status={tx.status} />
         </div>
@@ -55,7 +58,7 @@ function TransactionItem({
         )}
         {!tx.txHash && tx.status === "preparing" && (
           <p className="text-xs text-gray-500">
-            Interrupted before signing
+            {t("txbanner.interrupted")}
           </p>
         )}
       </div>
@@ -65,14 +68,14 @@ function TransactionItem({
             onClick={() => onRetry(tx.operationId)}
             className="px-3 py-1 text-xs font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors"
           >
-            Retry
+            {t("txbanner.retry")}
           </button>
         )}
         <button
           onClick={() => onDismiss(tx.operationId)}
           className="px-3 py-1 text-xs font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded transition-colors"
         >
-          Dismiss
+          {t("txbanner.dismiss")}
         </button>
       </div>
     </div>
@@ -80,6 +83,7 @@ function TransactionItem({
 }
 
 export function TxRecoveryBanner() {
+  const { t } = useLocale();
   const {
     recoveredTransactions,
     isRecovering,
@@ -127,22 +131,12 @@ export function TxRecoveryBanner() {
               </svg>
               <div>
                 <p className="text-sm font-medium text-blue-900">
-                  {pendingCount > 0 && (
-                    <>
-                      {pendingCount} pending transaction
-                      {pendingCount !== 1 ? "s" : ""} recovered
-                    </>
-                  )}
-                  {confirmedCount > 0 && pendingCount === 0 && (
-                    <>
-                      {confirmedCount} transaction
-                      {confirmedCount !== 1 ? "s" : ""} confirmed
-                    </>
-                  )}
+                  {pendingCount > 0 && t("txbanner.pendingRecovered", { count: pendingCount })}
+                  {confirmedCount > 0 && pendingCount === 0 && t("txbanner.confirmed", { count: confirmedCount })}
                 </p>
                 {!isExpanded && (
                   <p className="text-xs text-blue-700">
-                    Click Review to see details
+                    {t("txbanner.clickReview")}
                   </p>
                 )}
               </div>
@@ -152,13 +146,13 @@ export function TxRecoveryBanner() {
                 onClick={() => setIsExpanded(!isExpanded)}
                 className="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded transition-colors"
               >
-                {isExpanded ? "Hide" : "Review"}
+                {isExpanded ? t("txbanner.hide") : t("txbanner.review")}
               </button>
               <button
                 onClick={dismissAll}
                 className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded transition-colors"
               >
-                Dismiss All
+                {t("txbanner.dismissAll")}
               </button>
             </div>
           </div>

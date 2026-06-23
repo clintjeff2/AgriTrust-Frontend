@@ -9,6 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { InternationalizedText } from "@/src/components/common/InternationalizedText";
 
 const data = [
   { crop: "Maize", yield: 840 },
@@ -21,7 +22,7 @@ const data = [
 export function YieldHistogram() {
   return (
     <div className="rounded-xl border border-zinc-200 p-6 dark:border-zinc-800">
-      <h3 className="mb-4 text-sm font-medium text-zinc-500">Crop Yield Breakdown</h3>
+      <InternationalizedText as="h3" id="analytics.histogram.title" className="mb-4 text-sm font-medium text-zinc-500" />
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-zinc-200 dark:text-zinc-800" />

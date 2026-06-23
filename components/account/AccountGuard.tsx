@@ -2,15 +2,18 @@
 
 import { type ReactNode } from "react";
 import { useWallet } from "@/components/providers/WalletContext";
+import { useLocale } from "@/src/hooks/useLocale";
+import { InternationalizedText } from "@/src/components/common/InternationalizedText";
 
 export function AccountGuard({ children }: { children: ReactNode }) {
+  const { t } = useLocale();
   const { isSwitching, account } = useWallet();
 
   if (isSwitching) {
     return (
       <div
         role="status"
-        aria-label="Switching account"
+        aria-label={t("account.switching")}
         className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
       >
         <div className="w-full max-w-md space-y-4 p-6">
@@ -26,9 +29,11 @@ export function AccountGuard({ children }: { children: ReactNode }) {
   if (!account) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <p className="text-muted-foreground">
-          Please connect your wallet to continue.
-        </p>
+        <InternationalizedText
+          as="p"
+          id="account.connectPrompt"
+          className="text-muted-foreground"
+        />
       </div>
     );
   }

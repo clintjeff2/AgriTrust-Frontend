@@ -1,6 +1,7 @@
 "use client";
 
 import { useOfflineSync } from "@/src/hooks/useOfflineSync";
+import { useLocale } from "@/src/hooks/useLocale";
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -9,6 +10,7 @@ function formatBytes(bytes: number): string {
 }
 
 export default function SyncStatusBar() {
+  const { t } = useLocale();
   const { isOnline, isSyncing, pendingCount, totalCount, syncedCount, storageUsage } =
     useOfflineSync();
 
@@ -27,21 +29,21 @@ export default function SyncStatusBar() {
             aria-hidden="true"
           />
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            {isOnline ? (isSyncing ? "Syncing…" : "Online") : "Offline"}
+            {isOnline ? (isSyncing ? t("sync.syncing") : t("sync.online")) : t("sync.offline")}
           </span>
         </div>
         {pendingCount > 0 && (
           <span className="rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
-            {pendingCount} pending
+            {t("sync.pending", { count: pendingCount })}
           </span>
         )}
       </div>
 
       {/* Record sync progress */}
       <div className="mb-1 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-        <span>Records synced</span>
+        <span>{t("sync.recordsSynced")}</span>
         <span>
-          {syncedCount} / {totalCount} ({syncPercent}%)
+          {t("sync.progress", { synced: syncedCount, total: totalCount, percent: syncPercent })}
         </span>
       </div>
       <div
@@ -50,7 +52,7 @@ export default function SyncStatusBar() {
         aria-valuenow={syncPercent}
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-label="Records synced"
+        aria-label={t("sync.recordsSynced")}
       >
         <div
           className="h-full rounded-full bg-green-500 transition-all duration-300"
@@ -60,10 +62,13 @@ export default function SyncStatusBar() {
 
       {/* Storage utilization */}
       <div className="mb-1 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-        <span>Storage used</span>
+        <span>{t("sync.storageUsed")}</span>
         <span>
-          {formatBytes(storageUsage.used)} / {formatBytes(storageUsage.total)} (
-          {storageUsage.percent.toFixed(1)}%)
+          {t("sync.storageValue", {
+            used: formatBytes(storageUsage.used),
+            total: formatBytes(storageUsage.total),
+            percent: storageUsage.percent.toFixed(1),
+          })}
         </span>
       </div>
       <div
@@ -72,7 +77,7 @@ export default function SyncStatusBar() {
         aria-valuenow={Math.round(storageUsage.percent)}
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-label="Storage utilization"
+        aria-label={t("sync.storageUsed")}
       >
         <div
           className={`h-full rounded-full transition-all duration-300 ${
@@ -88,8 +93,7 @@ export default function SyncStatusBar() {
 
       {storageUsage.percent > 95 && (
         <p className="mt-2 text-xs text-red-600 dark:text-red-400">
-          Storage nearly full. Sync or clear old records before submitting new
-          audits.
+          {t("sync.storageFull")}
         </p>
       )}
     </div>

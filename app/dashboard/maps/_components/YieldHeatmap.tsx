@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useLocale } from "@/src/hooks/useLocale";
+import { InternationalizedText } from "@/src/components/common/InternationalizedText";
 
 type YieldPoint = {
   lat: number;
@@ -16,6 +18,7 @@ const yieldData: YieldPoint[] = [
 ];
 
 export function YieldHeatmap() {
+  const { t } = useLocale();
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<unknown>(null);
 
@@ -44,7 +47,9 @@ export function YieldHeatmap() {
           weight: 1,
         })
           .addTo(map)
-          .bindPopup(`<b>${pt.label}</b><br/>Yield: ${pt.value} kg/ha`);
+          .bindPopup(
+            `<b>${pt.label}</b><br/>${t("maps.heatmap.popupYield", { value: pt.value })}`,
+          );
       });
 
       mapRef.current = map;
@@ -58,11 +63,11 @@ export function YieldHeatmap() {
         mapRef.current = null;
       }
     };
-  }, []);
+  }, [t]);
 
   return (
     <div className="rounded-xl border border-zinc-200 p-6 dark:border-zinc-800">
-      <h3 className="mb-4 text-sm font-medium text-zinc-500">Yield Heatmap</h3>
+      <InternationalizedText as="h3" id="maps.heatmap.title" className="mb-4 text-sm font-medium text-zinc-500" />
       <div ref={containerRef} className="h-[400px] w-full rounded-lg" />
     </div>
   );

@@ -2,6 +2,7 @@
 
 import { useWallet } from "@/components/providers/WalletContext";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { useLocale } from "@/src/hooks/useLocale";
 
 // ─── Sign-in button ──────────────────────────────────────────────────
 
@@ -13,6 +14,7 @@ import { useAuth } from "@/components/providers/AuthProvider";
  * - Already authenticated → renders nothing (managed by parent)
  */
 export function SignInButton() {
+  const { t } = useLocale();
   const { account, connect } = useWallet();
   const { status, error, login, isLoggingIn } = useAuth();
 
@@ -29,10 +31,10 @@ export function SignInButton() {
       <button
         onClick={() => connect()}
         className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:scale-[0.98]"
-        aria-label="Connect your Web3 wallet"
+        aria-label={t("auth.connectAria")}
       >
         <WalletIcon className="mr-2 h-4 w-4" />
-        Connect Wallet
+        {t("auth.connectWallet")}
       </button>
     );
   }
@@ -51,26 +53,24 @@ export function SignInButton() {
       onClick={isPending ? undefined : () => login()}
       disabled={isPending}
       className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
-      aria-label={
-        isPending ? "Waiting for wallet signature" : "Sign in with wallet"
-      }
+      aria-label={isPending ? t("auth.waitingAria") : t("auth.signInAria")}
     >
       {isPending ? (
         <>
           <SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />
-          {status === "challenge_pending" && "Requesting Challenge..."}
-          {status === "signing" && "Waiting for Signature..."}
-          {status === "verifying" && "Verifying..."}
+          {status === "challenge_pending" && t("auth.requestingChallenge")}
+          {status === "signing" && t("auth.waitingSignature")}
+          {status === "verifying" && t("auth.verifying")}
           {isLoggingIn &&
             status !== "challenge_pending" &&
             status !== "signing" &&
             status !== "verifying" &&
-            "Signing In..."}
+            t("auth.signingIn")}
         </>
       ) : (
         <>
           <SignInIcon className="mr-2 h-4 w-4" />
-          Sign In
+          {t("auth.signIn")}
         </>
       )}
     </button>

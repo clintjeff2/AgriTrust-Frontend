@@ -1,6 +1,11 @@
+"use client";
+
+import { useLocale } from "@/src/hooks/useLocale";
+
 export function DashboardSkeleton() {
+  const { t } = useLocale();
   return (
-    <div role="status" aria-label="Loading dashboard" className="space-y-6 p-6">
+    <div role="status" aria-label={t("common.loadingDashboard")} className="space-y-6 p-6">
       <div className="h-8 w-1/3 animate-pulse rounded bg-zinc-200 dark:bg-zinc-700" />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {Array.from({ length: 3 }).map((_, i) => (
