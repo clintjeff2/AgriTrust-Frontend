@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { InternationalizedText } from "@/src/components/common/InternationalizedText";
 
 const TelemetryChart = dynamic(
   () => import("./_components/TelemetryChart").then((m) => ({ default: m.TelemetryChart })),
@@ -15,7 +16,7 @@ const YieldHistogram = dynamic(
 export default function AnalyticsPage() {
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Analytics</h1>
+      <InternationalizedText as="h1" id="analytics.title" className="text-2xl font-bold" />
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <TelemetryChart />
         <YieldHistogram />

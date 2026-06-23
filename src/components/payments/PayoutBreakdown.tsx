@@ -2,6 +2,7 @@
 
 import { Decimal } from "@/src/utils/arithmetic";
 import { formatSorobanValue } from "@/src/utils/number_scaler";
+import { useLocale } from "@/src/hooks/useLocale";
 
 /**
  * Represents a line item in a payout breakdown.
@@ -52,9 +53,11 @@ export default function PayoutBreakdown({
   basePrice,
   adjustments,
   precision = 2,
-  title = "Payout Breakdown",
+  title,
   className = "",
 }: PayoutBreakdownProps) {
+  const { t } = useLocale();
+  const displayTitle = title ?? t("payout.title");
   // Convert base price to Decimal for calculation
   const basePriceStr = typeof basePrice === "bigint" ? basePrice.toString() : basePrice;
   let runningTotal = new Decimal(basePriceStr, 7);
@@ -85,16 +88,16 @@ export default function PayoutBreakdown({
     >
       {/* Header */}
       <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
-        {title}
+        {displayTitle}
       </h3>
 
       {/* Base Price */}
       <div className="mb-3 flex items-center justify-between border-b border-gray-200 pb-3 dark:border-gray-700">
         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-          Base Price
+          {t("payout.basePrice")}
         </span>
         <span className="text-lg font-bold text-gray-900 dark:text-white">
-          {formattedBasePrice} tokens
+          {t("payout.tokens", { amount: formattedBasePrice })}
         </span>
       </div>
 
@@ -124,8 +127,10 @@ export default function PayoutBreakdown({
                     : "text-red-600 dark:text-red-400"
                 }`}
               >
-                {item.type === "addition" ? "+" : "-"}
-                {item.formattedAmount} tokens
+                {t("payout.signedTokens", {
+                  sign: item.type === "addition" ? "+" : "-",
+                  amount: item.formattedAmount,
+                })}
               </span>
             </div>
           ))}
@@ -135,10 +140,10 @@ export default function PayoutBreakdown({
       {/* Total */}
       <div className="flex items-center justify-between border-t-2 border-gray-300 pt-3 dark:border-gray-600">
         <span className="text-base font-semibold text-gray-900 dark:text-white">
-          Final Payout
+          {t("payout.finalPayout")}
         </span>
         <span className="text-xl font-bold text-blue-600 dark:text-blue-400">
-          {formattedTotal} tokens
+          {t("payout.tokens", { amount: formattedTotal })}
         </span>
       </div>
 
@@ -146,8 +151,8 @@ export default function PayoutBreakdown({
       {precision === 7 && (
         <div className="mt-3 rounded-lg bg-blue-50 px-3 py-2 dark:bg-blue-900/20">
           <p className="text-xs text-blue-700 dark:text-blue-300">
-            <span className="font-medium">Detailed View:</span> Showing all 7
-            decimal places for exact on-chain precision.
+            <span className="font-medium">{t("payout.detailedLabel")}</span>{" "}
+            {t("payout.detailedBody")}
           </p>
         </div>
       )}

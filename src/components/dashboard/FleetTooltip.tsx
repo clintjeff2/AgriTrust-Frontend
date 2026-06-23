@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import type { FleetAsset } from "@/src/types/fleet";
 import { SafeText } from "@/src/components/common/SafeText";
+import { useLocale } from "@/src/hooks/useLocale";
 
 interface FleetTooltipProps {
   asset: FleetAsset | null;
@@ -11,6 +12,7 @@ interface FleetTooltipProps {
 }
 
 export function FleetTooltip({ asset, x, y }: FleetTooltipProps) {
+  const { t } = useLocale();
   if (!asset) return null;
 
   const style: React.CSSProperties = {
@@ -43,22 +45,22 @@ export function FleetTooltip({ asset, x, y }: FleetTooltipProps) {
         <SafeText>{asset.id}</SafeText>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-        <Row label="Type" value={<SafeText>{asset.assetType}</SafeText>} />
+        <Row label={t("fleet.type")} value={<SafeText>{asset.assetType}</SafeText>} />
         <Row
-          label="Temperature"
+          label={t("fleet.temperature")}
           value={`${asset.temperature}°C`}
           color={asset.temperature > 35 ? "#ef4444" : undefined}
         />
-        <Row label="Status" value={asset.status} color={statusColor} />
+        <Row label={t("fleet.status")} value={asset.status} color={statusColor} />
         <Row
-          label="Battery"
+          label={t("fleet.battery")}
           value={`${asset.batteryLevel}%`}
           color={asset.batteryLevel < 20 ? "#ef4444" : undefined}
         />
-        <Row label="Cargo" value={String(asset.cargoCount)} />
-        <Row label="ETA" value={formatETA(asset.eta)} />
-        <Row label="GPS" value={`${asset.lastGps.lat.toFixed(4)}, ${asset.lastGps.lng.toFixed(4)}`} />
-        <Row label="Insurance" value={<SafeText>{asset.insuranceStatus}</SafeText>} />
+        <Row label={t("fleet.cargo")} value={String(asset.cargoCount)} />
+        <Row label={t("fleet.eta")} value={formatETA(asset.eta)} />
+        <Row label={t("fleet.gps")} value={`${asset.lastGps.lat.toFixed(4)}, ${asset.lastGps.lng.toFixed(4)}`} />
+        <Row label={t("fleet.insurance")} value={<SafeText>{asset.insuranceStatus}</SafeText>} />
       </div>
     </div>
   );

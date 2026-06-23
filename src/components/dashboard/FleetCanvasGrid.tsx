@@ -14,6 +14,7 @@ import {
   getCellAtPoint,
 } from "@/src/utils/canvasRenderer";
 import { FleetTooltip } from "./FleetTooltip";
+import { useLocale } from "@/src/hooks/useLocale";
 
 interface FleetCanvasGridProps {
   data: FleetDataSnapshot;
@@ -26,6 +27,7 @@ export function FleetCanvasGrid({
   totalAssets,
   height = 600,
 }: FleetCanvasGridProps) {
+  const { t } = useLocale();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const rafIdRef = useRef<number>(0);
@@ -61,7 +63,14 @@ export function FleetCanvasGrid({
 
       ctx.clearRect(0, 0, width, visibleHeight);
 
-      drawHeader(ctx, width);
+      drawHeader(ctx, width, [
+        t("fleet.col.assetId"),
+        t("fleet.col.type"),
+        t("fleet.col.temp"),
+        t("fleet.col.status"),
+        t("fleet.col.cargo"),
+        t("fleet.col.eta"),
+      ]);
 
       const startRow = Math.max(
         0,
@@ -87,7 +96,7 @@ export function FleetCanvasGrid({
 
       drawGridLines(ctx, width, visibleHeight, scrollTop);
     },
-    [data.assets, totalAssets, height, width],
+    [data.assets, totalAssets, height, width, t],
   );
 
   useEffect(() => {
@@ -298,11 +307,11 @@ export function FleetCanvasGrid({
           alignItems: "center",
         }}
       >
-        <span>{totalAssets.toLocaleString()} assets</span>
+        <span>{t("fleet.assets", { count: totalAssets })}</span>
         <span>
           {selectedIndices.size > 0
-            ? `${selectedIndices.size} selected`
-            : "Click to select, Shift+click for multi-select"}
+            ? t("fleet.selected", { count: selectedIndices.size })
+            : t("fleet.selectHint")}
         </span>
       </div>
       <FleetTooltip asset={tooltipAsset} x={tooltipPos.x} y={tooltipPos.y} />

@@ -9,15 +9,18 @@ import { useState } from 'react';
 import { useSorobanEscrow } from '@/hooks/useSorobanEscrow';
 import { TransactionModal } from './TransactionModal';
 import { useWallet } from '@/components/providers/WalletContext';
+import { useLocale } from '@/src/hooks/useLocale';
+import { InternationalizedText } from '@/src/components/common/InternationalizedText';
 
 export function EscrowDepositExample() {
+  const { t } = useLocale();
   const { account } = useWallet();
   const [amount, setAmount] = useState('');
   const escrow = useSorobanEscrow();
 
   const handleDeposit = () => {
     if (!amount || parseFloat(amount) <= 0) {
-      alert('Please enter a valid amount');
+      alert(t('escrow.invalidAmount'));
       return;
     }
 
@@ -32,21 +35,21 @@ export function EscrowDepositExample() {
 
   return (
     <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-4">Escrow Deposit</h2>
+      <InternationalizedText as="h2" id="escrow.title" className="text-2xl font-bold mb-4" />
 
       {escrow.escrowData && (
         <div className="mb-4 p-4 bg-gray-50 rounded">
-          <div className="text-sm text-gray-600">Current Balance</div>
+          <InternationalizedText as="div" id="escrow.currentBalance" className="text-sm text-gray-600" />
           <div className="text-xl font-semibold">{escrow.escrowData.balance} XLM</div>
           <div className="text-xs text-gray-500 mt-1">
-            Certification: {escrow.escrowData.certificationValid ? '✓ Valid' : '✗ Invalid'}
+            {t('escrow.certification', { valid: escrow.escrowData.certificationValid })}
           </div>
         </div>
       )}
 
       <div className="mb-4">
         <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-2">
-          Deposit Amount (XLM)
+          {t('escrow.depositAmount')}
         </label>
         <input
           id="amount"
@@ -56,7 +59,7 @@ export function EscrowDepositExample() {
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="0.0000000"
+          placeholder={t('escrow.amountPlaceholder')}
           disabled={escrow.isDepositing}
         />
       </div>
@@ -66,16 +69,16 @@ export function EscrowDepositExample() {
         disabled={!account || escrow.isDepositing || !amount}
         className="w-full px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-md font-medium"
       >
-        {escrow.isDepositing ? 'Processing...' : 'Deposit to Escrow'}
+        {escrow.isDepositing ? t('escrow.processing') : t('escrow.depositCta')}
       </button>
 
       {escrow.depositError && (
         <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
-          <div className="text-sm font-medium text-red-800">Deposit Failed</div>
+          <InternationalizedText as="div" id="escrow.depositFailed" className="text-sm font-medium text-red-800" />
           <div className="text-xs text-red-600 mt-1">
             {escrow.depositError instanceof Error
               ? escrow.depositError.message
-              : 'Unknown error occurred'}
+              : t('escrow.unknownError')}
           </div>
         </div>
       )}
@@ -90,8 +93,8 @@ export function EscrowDepositExample() {
           functionName="deposit"
           args={[escrow.pendingDeposit.amount]}
           sourceAccount={account || undefined}
-          title="Confirm Escrow Deposit"
-          description={`Review the resource fees for depositing ${escrow.pendingDeposit.amount} XLM to escrow`}
+          title={t('escrow.confirmTitle')}
+          description={t('escrow.confirmDesc', { amount: escrow.pendingDeposit.amount })}
         />
       )}
     </div>

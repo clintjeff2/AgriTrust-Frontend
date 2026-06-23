@@ -10,6 +10,8 @@ import {
   CartesianGrid,
   Tooltip,
 } from "recharts";
+import { useLocale } from "@/src/hooks/useLocale";
+import { InternationalizedText } from "@/src/components/common/InternationalizedText";
 
 const sampleData = [
   { month: "Jan", yield: 400, rainfall: 240 },
@@ -22,18 +24,19 @@ const sampleData = [
 
 export function TelemetryChart() {
   const id = useId();
+  const { t } = useLocale();
 
   return (
     <div className="rounded-xl border border-zinc-200 p-6 dark:border-zinc-800">
-      <h3 className="mb-4 text-sm font-medium text-zinc-500">Crop Yield &amp; Rainfall</h3>
+      <InternationalizedText as="h3" id="analytics.telemetry.title" className="mb-4 text-sm font-medium text-zinc-500" />
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={sampleData}>
           <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-zinc-200 dark:text-zinc-800" />
           <XAxis dataKey="month" stroke="currentColor" className="text-xs text-zinc-400" />
           <YAxis stroke="currentColor" className="text-xs text-zinc-400" />
           <Tooltip />
-          <Line type="monotone" dataKey="yield" stroke="#10b981" strokeWidth={2} name="Yield" />
-          <Line type="monotone" dataKey="rainfall" stroke="#3b82f6" strokeWidth={2} name="Rainfall" />
+          <Line type="monotone" dataKey="yield" stroke="#10b981" strokeWidth={2} name={t("analytics.telemetry.yield")} />
+          <Line type="monotone" dataKey="rainfall" stroke="#3b82f6" strokeWidth={2} name={t("analytics.telemetry.rainfall")} />
         </LineChart>
       </ResponsiveContainer>
     </div>

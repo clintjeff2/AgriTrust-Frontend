@@ -3,6 +3,8 @@
 import { useEffect, useState, useCallback } from "react";
 import type { PendingDeposit } from "@/hooks/useSorobanEscrow";
 import { Decimal } from "@/src/utils/arithmetic";
+import { useLocale } from "@/src/hooks/useLocale";
+import { InternationalizedText } from "@/src/components/common/InternationalizedText";
 
 interface EscrowDisplayData {
   balance: string;
@@ -44,17 +46,21 @@ export default function InventoryCard({
   isDepositing,
   onDeposit,
 }: InventoryCardProps) {
+  const { t } = useLocale();
   const [failedDepositMessage, setFailedDepositMessage] = useState<string | null>(null);
 
   // Listen for deposit failure events dispatched by the rollbackFn.
-  const handleDepositFailed = useCallback((event: Event) => {
-    const detail = (event as CustomEvent<EscrowDepositFailedDetail>).detail;
-    setFailedDepositMessage(
-      `Deposit of ${detail.amount} failed: ${detail.error}`
-    );
-    // Auto-dismiss after 8 seconds.
-    setTimeout(() => setFailedDepositMessage(null), 8000);
-  }, []);
+  const handleDepositFailed = useCallback(
+    (event: Event) => {
+      const detail = (event as CustomEvent<EscrowDepositFailedDetail>).detail;
+      setFailedDepositMessage(
+        t("inventory.depositFailedMsg", { amount: detail.amount, error: detail.error })
+      );
+      // Auto-dismiss after 8 seconds.
+      setTimeout(() => setFailedDepositMessage(null), 8000);
+    },
+    [t]
+  );
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -81,9 +87,11 @@ export default function InventoryCard({
   if (error) {
     return (
       <div className="rounded-xl border border-red-200 bg-red-50 p-6 shadow-sm dark:border-red-800 dark:bg-red-900/20">
-        <p className="text-sm font-medium text-red-700 dark:text-red-400">
-          Failed to load escrow data
-        </p>
+        <InternationalizedText
+          as="p"
+          id="inventory.loadFailed"
+          className="text-sm font-medium text-red-700 dark:text-red-400"
+        />
         <p className="mt-1 text-xs text-red-500 dark:text-red-500">
           {error.message}
         </p>
@@ -95,9 +103,11 @@ export default function InventoryCard({
   if (!data) {
     return (
       <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-6 shadow-sm dark:border-gray-600 dark:bg-gray-800/50">
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          No escrow data available. Connect a wallet to view your inventory.
-        </p>
+        <InternationalizedText
+          as="p"
+          id="inventory.empty"
+          className="text-sm text-gray-500 dark:text-gray-400"
+        />
       </div>
     );
   }
@@ -116,33 +126,37 @@ export default function InventoryCard({
     <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
       {/* Header */}
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-          Escrow Inventory
-        </h3>
+        <InternationalizedText
+          as="h3"
+          id="inventory.title"
+          className="text-lg font-semibold text-gray-900 dark:text-white"
+        />
         {data.certificationValid ? (
-          <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">
-            Certified
-          </span>
+          <InternationalizedText
+            as="span"
+            id="inventory.certified"
+            className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400"
+          />
         ) : (
-          <span className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
-            Pending Certification
-          </span>
+          <InternationalizedText
+            as="span"
+            id="inventory.pendingCert"
+            className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
+          />
         )}
       </div>
 
       {/* Balance */}
       <div className="mb-4">
-        <p className="text-sm text-gray-500 dark:text-gray-400">Balance</p>
+        <InternationalizedText as="p" id="inventory.balance" className="text-sm text-gray-500 dark:text-gray-400" />
         <p className="text-3xl font-bold text-gray-900 dark:text-white">
-          {Decimal.fromString(data.balance, 7).format(2)} tokens
+          {t("inventory.tokens", { amount: Decimal.fromString(data.balance, 7).format(2) })}
         </p>
       </div>
 
       {/* Milestone Status */}
       <div className="mb-4">
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Milestone Status
-        </p>
+        <InternationalizedText as="p" id="inventory.milestoneStatus" className="text-sm text-gray-500 dark:text-gray-400" />
         <p className="mt-1 text-sm font-medium capitalize text-gray-900 dark:text-white">
           {data.milestoneStatus}
         </p>
@@ -154,9 +168,11 @@ export default function InventoryCard({
       {pendingCount > 0 && (
         <div className="mb-4">
           <div className="mb-2 flex items-center gap-2">
-            <p className="text-sm font-medium text-gray-900 dark:text-white">
-              Pending Deposits
-            </p>
+            <InternationalizedText
+              as="p"
+              id="inventory.pendingDeposits"
+              className="text-sm font-medium text-gray-900 dark:text-white"
+            />
             <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-100 px-1.5 text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
               {pendingCount}
             </span>
@@ -176,7 +192,7 @@ export default function InventoryCard({
                     <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-amber-500" />
                   </span>
                   <span className="text-sm font-medium text-amber-900 dark:text-amber-300">
-                    +{Decimal.fromString(deposit.amount, 7).format(2)} tokens
+                    {t("inventory.pendingAmount", { amount: Decimal.fromString(deposit.amount, 7).format(2) })}
                   </span>
                 </div>
                 <span className="text-xs text-amber-600 dark:text-amber-400">
@@ -188,7 +204,7 @@ export default function InventoryCard({
 
           {totalPending && (
             <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">
-              Total pending: +{totalPending} tokens
+              {t("inventory.totalPending", { amount: totalPending })}
               {isDepositing && (
                 <span className="ml-1 inline-block animate-pulse">
                   &hellip;
@@ -217,9 +233,11 @@ export default function InventoryCard({
               />
             </svg>
             <div>
-              <p className="text-sm font-medium text-red-800 dark:text-red-300">
-                Deposit Failed
-              </p>
+              <InternationalizedText
+                as="p"
+                id="inventory.depositFailed"
+                className="text-sm font-medium text-red-800 dark:text-red-300"
+              />
               <p className="text-xs text-red-600 dark:text-red-400">
                 {failedDepositMessage}
               </p>
@@ -236,7 +254,7 @@ export default function InventoryCard({
           disabled={isDepositing}
           className="mt-4 w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-blue-500 dark:hover:bg-blue-600"
         >
-          {isDepositing ? "Processing Deposit..." : "Deposit 100 Tokens"}
+          {isDepositing ? t("inventory.processingDeposit") : t("inventory.deposit100")}
         </button>
       )}
     </div>
