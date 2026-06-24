@@ -11,6 +11,8 @@ import {
 } from "react";
 import EventEmitter from "eventemitter3";
 import { queryClient } from "@/lib/queryClient";
+import { defaultWalletStore } from "@/src/stores/walletStore";
+import type { WalletSyncPayload } from "@/src/types/sync";
 
 const ACCOUNT_SWITCH = "ACCOUNT_SWITCH";
 
@@ -107,6 +109,16 @@ function getAccountsFromProvider(provider: WalletProvider): string[] | null {
   }
 }
 
+function buildSyncPayload(
+  acct: string | null,
+): WalletSyncPayload {
+  return {
+    account: acct,
+    chainId: null,
+    status: acct ? "connected" : "disconnected",
+  };
+}
+
 export function WalletProvider({ children }: { children: ReactNode }) {
   const [account, setAccount] = useState<string | null>(null);
   const [isSwitching, setIsSwitching] = useState(false);
@@ -126,6 +138,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
     setAccount(newAccount);
     previousAccountRef.current = newAccount;
+
+    // Push to the shared wallet store so tab-sync picks it up
+    defaultWalletStore.setState(buildSyncPayload(newAccount));
 
     setTimeout(() => {
       setIsSwitching(false);
@@ -192,6 +207,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setProvider(resolvedProvider);
     setAccount(acct);
     previousAccountRef.current = acct;
+    defaultWalletStore.setState(buildSyncPayload(acct));
   }, []);
 
   const disconnect = useCallback(() => {
@@ -200,6 +216,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setAccount(null);
     previousAccountRef.current = null;
     queryClient.clear();
+    defaultWalletStore.setState(buildSyncPayload(null));
   }, []);
 
   return (
