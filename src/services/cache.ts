@@ -5,11 +5,16 @@ import {
   CERT_CACHE_PREFIX,
 } from "@/src/services/swCacheStrategy";
 import type { CertificationStatus } from "@/src/types/certification";
+import type { AuditEntry, AuditLogChunk, AuditLogMetadata } from "@/src/types/audit";
 
 const DB_NAME = "agritrust-form-cache";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const DRAFT_STORE = "formDrafts";
 const MAX_FORM_DRAFTS = 10;
+export const AUDIT_ENTRY_STORE = "auditEntries";
+export const AUDIT_CHUNK_STORE = "auditChunks";
+export const AUDIT_META_STORE = "auditMetadata";
+export const AUDIT_CHUNK_MAX_BYTES = 1024 * 1024;
 
 export interface FormDraft<TData = unknown> {
   key: string;
@@ -33,6 +38,25 @@ interface FormCacheDB extends DBSchema {
     indexes: {
       "by-updatedAt": number;
     };
+  };
+  auditEntries: {
+    key: string;
+    value: AuditEntry;
+    indexes: {
+      "by-sequence": number;
+      "by-certId": string;
+    };
+  };
+  auditChunks: {
+    key: string;
+    value: AuditLogChunk;
+    indexes: {
+      "by-chunkIndex": number;
+    };
+  };
+  auditMetadata: {
+    key: string;
+    value: AuditLogMetadata;
   };
 }
 
@@ -62,7 +86,7 @@ export function buildCacheKey(
   return `${type}-${id}`;
 }
 
-function getDraftDb(): Promise<IDBPDatabase<FormCacheDB>> {
+export function getAppCacheDb(): Promise<IDBPDatabase<FormCacheDB>> {
   if (!dbPromise) {
     dbPromise = openDB<FormCacheDB>(DB_NAME, DB_VERSION, {
       upgrade(db) {
@@ -70,11 +94,27 @@ function getDraftDb(): Promise<IDBPDatabase<FormCacheDB>> {
           const store = db.createObjectStore(DRAFT_STORE, { keyPath: "key" });
           store.createIndex("by-updatedAt", "updatedAt");
         }
+        if (!db.objectStoreNames.contains(AUDIT_ENTRY_STORE)) {
+          const store = db.createObjectStore(AUDIT_ENTRY_STORE, { keyPath: "id" });
+          store.createIndex("by-sequence", "sequence", { unique: true });
+          store.createIndex("by-certId", "certId");
+        }
+        if (!db.objectStoreNames.contains(AUDIT_CHUNK_STORE)) {
+          const store = db.createObjectStore(AUDIT_CHUNK_STORE, { keyPath: "id" });
+          store.createIndex("by-chunkIndex", "chunkIndex", { unique: true });
+        }
+        if (!db.objectStoreNames.contains(AUDIT_META_STORE)) {
+          db.createObjectStore(AUDIT_META_STORE, { keyPath: "id" });
+        }
       },
     });
   }
 
   return dbPromise;
+}
+
+function getDraftDb(): Promise<IDBPDatabase<FormCacheDB>> {
+  return getAppCacheDb();
 }
 
 async function enforceDraftLimit(
