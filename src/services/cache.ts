@@ -1,5 +1,10 @@
 import { openDB, type DBSchema, type IDBPDatabase } from "idb";
 import type { FormStep } from "@/src/types/registration";
+import {
+  buildCertCacheKey,
+  CERT_CACHE_PREFIX,
+} from "@/src/services/swCacheStrategy";
+import type { CertificationStatus } from "@/src/types/certification";
 
 const DB_NAME = "agritrust-form-cache";
 const DB_VERSION = 1;
@@ -35,6 +40,26 @@ let dbPromise: Promise<IDBPDatabase<FormCacheDB>> | null = null;
 
 export function formDraftKey(productId: string): string {
   return `form-draft-${productId}`;
+}
+
+/**
+ * Builds a status-aware cache key so certification entries are invalidated per
+ * lifecycle transition rather than in bulk. Certification keys follow the
+ * `cert-v1-{status}-{id}` schema (see {@link buildCertCacheKey}); other types
+ * fall back to a plain `{type}-{id}` key.
+ */
+export function buildCacheKey(
+  type: string,
+  id: string,
+  status?: CertificationStatus
+): string {
+  if (type === CERT_CACHE_PREFIX || type === "cert") {
+    if (!status) {
+      throw new Error("Certification cache keys require a status segment");
+    }
+    return buildCertCacheKey(id, status);
+  }
+  return `${type}-${id}`;
 }
 
 function getDraftDb(): Promise<IDBPDatabase<FormCacheDB>> {
