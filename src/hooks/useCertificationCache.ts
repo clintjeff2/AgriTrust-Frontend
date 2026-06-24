@@ -141,6 +141,9 @@ export function useCertificationCache<T = unknown>(
         previousState: status,
         newState: toStatus,
         signer: "dashboard",
+      }).catch(() => {
+        // Audit persistence is best-effort so cache invalidation remains reliable
+        // in test, SSR, or locked-down browser contexts without IndexedDB.
       });
     },
     [certId, status]
