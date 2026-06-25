@@ -3,9 +3,20 @@
 interface FreighterProvider {
   isConnected: () => boolean;
   connect: () => Promise<{ address: string }>;
+  disconnect: () => void;
   signMessage: (message: string) => Promise<{ signedMessage: string }>;
+  sign: (message: Uint8Array) => Promise<{ signature: string }>;
+  getAccount: () => string | null;
   on: (event: string, handler: (...args: unknown[]) => void) => void;
   removeListener?: (event: string, handler: (...args: unknown[]) => void) => void;
+}
+
+interface LobstrProvider {
+  connect: () => Promise<{ publicKey: string }>;
+  disconnect: () => void;
+  isConnected: () => boolean;
+  getPublicKey: () => string | null;
+  sign: (message: string) => Promise<{ signature: string }>;
 }
 
 interface EthereumProvider {
@@ -28,6 +39,7 @@ interface IdleDeadline {
 interface Window {
   ethereum?: EthereumProvider;
   freighter?: FreighterProvider;
+  lobstr?: LobstrProvider;
   sorobanEvents?: (account: string) => void;
   requestIdleCallback?: (
     callback: (deadline: IdleDeadline) => void,
