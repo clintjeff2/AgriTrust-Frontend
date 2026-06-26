@@ -16,6 +16,7 @@ type WalletProvider = "metamask" | "walletconnect" | "freighter" | null;
 
 export interface UseWalletSyncReturn {
   account: string | null;
+  chainId: string | null;
   isSwitching: boolean;
   provider: WalletProvider;
   connect: (p?: WalletProvider) => Promise<void>;
@@ -67,6 +68,7 @@ export function useWallet(): UseWalletSyncReturn {
 
   return {
     account: effectiveAccount,
+    chainId: remoteState.chainId,
     isSwitching: ctx.isSwitching,
     provider: ctx.provider,
     connect: ctx.connect,
