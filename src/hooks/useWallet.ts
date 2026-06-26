@@ -18,6 +18,7 @@ type WalletStatus = "connected" | "disconnected" | "connecting" | "approving" | 
 export interface UseWalletSyncReturn {
   account: string | null;
   status: WalletStatus;
+  status: WalletStatus;
   chainId: string | null;
   isSwitching: boolean;
   provider: WalletProvider;
