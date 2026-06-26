@@ -29,7 +29,10 @@ jobs:
         run: pnpm run build
 
       - name: Install Lighthouse CI
-        run: npm install -g @lhci/cli@0.14.x
+        # 0.13.x ships Lighthouse 11, which still has the full PWA audit set
+        # (installable-manifest, service-worker, works-offline, categories:pwa).
+        # Lighthouse 12 (used by 0.14.x) removed those audits entirely.
+        run: npm install -g @lhci/cli@0.13.x
 
       - name: Start production server & run Lighthouse CI
         run: |
