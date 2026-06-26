@@ -13,9 +13,11 @@ import { useTabSync } from "@/src/hooks/useTabSync";
 import type { WalletSyncPayload } from "@/src/types/sync";
 
 type WalletProvider = "metamask" | "walletconnect" | "freighter" | null;
+type WalletStatus = "connected" | "disconnected" | "connecting" | "approving" | "reconnecting" | "signing" | "ready";
 
 export interface UseWalletSyncReturn {
   account: string | null;
+  status: WalletStatus;
   chainId: string | null;
   isSwitching: boolean;
   provider: WalletProvider;
@@ -29,7 +31,7 @@ function toSyncPayload(account: string | null): WalletSyncPayload {
   return {
     account,
     chainId: null,
-    status: account ? "connected" : "disconnected",
+    status: account ? "ready" : "disconnected",
   };
 }
 
@@ -68,6 +70,7 @@ export function useWallet(): UseWalletSyncReturn {
 
   return {
     account: effectiveAccount,
+    status: ctx.isSwitching ? "reconnecting" : remoteState.status || ctx.status,
     chainId: remoteState.chainId,
     isSwitching: ctx.isSwitching,
     provider: ctx.provider,

@@ -1,5 +1,6 @@
 import { type ReactNode } from "react";
 import { LoadingBoundary } from "@/components/loading/LoadingBoundary";
+import { DashboardWalletBoundary } from "@/src/components/wallet/DashboardWalletBoundary";
 import { InternationalizedText } from "@/src/components/common/InternationalizedText";
 import { LocaleSwitcher } from "@/src/components/common/LocaleSwitcher";
 
@@ -49,7 +50,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         </nav>
       </header>
       <main className="mx-auto max-w-7xl px-4 py-8">
-        <LoadingBoundary>{children}</LoadingBoundary>
+        <LoadingBoundary>
+          <DashboardWalletBoundary>{children}</DashboardWalletBoundary>
+        </LoadingBoundary>
       </main>
     </div>
   );

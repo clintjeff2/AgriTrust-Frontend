@@ -14,7 +14,7 @@ export type SyncMessageType =
 export interface WalletSyncPayload {
   account: string | null;
   chainId: string | null;
-  status: "connected" | "disconnected" | "connecting";
+  status: "connected" | "disconnected" | "connecting" | "approving" | "reconnecting" | "signing" | "ready";
 }
 
 /** Envelope sent over the BroadcastChannel. */

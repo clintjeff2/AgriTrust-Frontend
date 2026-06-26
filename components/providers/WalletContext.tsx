@@ -50,8 +50,11 @@ type WalletProvider =
   | "freighter"
   | null;
 
+type WalletStatus = "connected" | "disconnected" | "connecting" | "approving" | "reconnecting" | "signing" | "ready";
+
 interface WalletState {
   account: string | null;
+  status: WalletStatus;
   isSwitching: boolean;
   provider: WalletProvider;
   connect: (p?: WalletProvider) => Promise<void>;
@@ -115,12 +118,13 @@ function buildSyncPayload(
   return {
     account: acct,
     chainId: null,
-    status: acct ? "connected" : "disconnected",
+    status: acct ? "ready" : "disconnected",
   };
 }
 
 export function WalletProvider({ children }: { children: ReactNode }) {
   const [account, setAccount] = useState<string | null>(null);
+  const [status, setStatus] = useState<WalletStatus>("disconnected");
   const [isSwitching, setIsSwitching] = useState(false);
   const [provider, setProvider] = useState<WalletProvider>(null);
   const channelRef = useRef<AccountChangeChannel | null>(null);
@@ -128,6 +132,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   const handleAccountSwitch = useCallback((newAccount: string | null) => {
     setIsSwitching(true);
+    setStatus(newAccount ? "reconnecting" : "disconnected");
 
     if (!newAccount) {
       queryClient.clear();
@@ -144,6 +149,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
     setTimeout(() => {
       setIsSwitching(false);
+      setStatus(newAccount ? "ready" : "disconnected");
     }, 200);
   }, []);
 
@@ -203,16 +209,28 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     const resolvedProvider = p ?? detectProvider();
     if (!resolvedProvider) throw new Error("No wallet provider detected");
 
-    const acct = await connectWallet(resolvedProvider);
-    setProvider(resolvedProvider);
-    setAccount(acct);
-    previousAccountRef.current = acct;
-    defaultWalletStore.setState(buildSyncPayload(acct));
-  }, []);
+    setStatus("connecting");
+    const approvalTimer = setTimeout(() => setStatus("approving"), 100);
+
+    try {
+      const acct = await connectWallet(resolvedProvider);
+      clearTimeout(approvalTimer);
+      setProvider(resolvedProvider);
+      setAccount(acct);
+      setStatus("ready");
+      previousAccountRef.current = acct;
+      defaultWalletStore.setState(buildSyncPayload(acct));
+    } catch (error) {
+      clearTimeout(approvalTimer);
+      setStatus(account ? "ready" : "disconnected");
+      throw error;
+    }
+  }, [account]);
 
   const disconnect = useCallback(() => {
     channelRef.current?.push(null);
     setProvider(null);
+    setStatus("disconnected");
     setAccount(null);
     previousAccountRef.current = null;
     queryClient.clear();
@@ -223,6 +241,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     <WalletContext.Provider
       value={{
         account,
+        status,
         isSwitching,
         provider,
         connect,
