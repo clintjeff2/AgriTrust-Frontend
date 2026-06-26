@@ -9,7 +9,7 @@ import type { WalletSyncPayload } from "@/src/types/sync";
 export interface WalletStoreState {
   account: string | null;
   chainId: string | null;
-  status: "connected" | "disconnected" | "connecting";
+  status: "connected" | "disconnected" | "connecting" | "approving" | "reconnecting" | "signing" | "ready";
   /** Wall-clock timestamp of the last state mutation (local or remote). */
   lastUpdated: number;
 }
