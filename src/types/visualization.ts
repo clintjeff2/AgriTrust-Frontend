@@ -32,3 +32,49 @@ export interface ColorAssignment {
   lab: LabColor;
   paletteIndex: number;
 }
+
+export interface FlowNode {
+  id: string;
+  x: number;
+  y: number;
+  vx?: number;
+  vy?: number;
+  mass?: number;
+  color?: string;
+  size?: number;
+  trustScore?: number;
+}
+
+export interface FlowEdge {
+  id?: string;
+  source: string;
+  target: string;
+  bundleWeight?: number;
+  color?: string;
+}
+
+export interface BundledEdge extends FlowEdge {
+  controlPoints: Array<{ x: number; y: number }>;
+}
+
+export interface ParticleState {
+  id: string;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  mass: number;
+  size: number;
+  color: [number, number, number, number];
+}
+
+export interface FlowVisualizationData {
+  nodes: FlowNode[];
+  edges: FlowEdge[];
+}
+
+export interface FlowCamera {
+  x: number;
+  y: number;
+  zoom: number;
+}
