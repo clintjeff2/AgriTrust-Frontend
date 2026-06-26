@@ -14,11 +14,9 @@ import type { WalletSyncPayload } from "@/src/types/sync";
 
 type WalletProvider = "metamask" | "walletconnect" | "freighter" | null;
 type WalletStatus = "connected" | "disconnected" | "connecting" | "approving" | "reconnecting" | "signing" | "ready";
-type WalletStatus = "connected" | "disconnected" | "connecting" | "approving" | "reconnecting" | "signing" | "ready";
 
 export interface UseWalletSyncReturn {
   account: string | null;
-  status: WalletStatus;
   status: WalletStatus;
   chainId: string | null;
   isSwitching: boolean;
