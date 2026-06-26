@@ -6,6 +6,7 @@ import {
   subscribeToCacheInvalidation,
 } from "@/src/services/swRegistration";
 import { CERT_STATUS_CHANNEL } from "@/src/services/swCacheStrategy";
+import { append as appendAuditEntry } from "@/src/services/auditLog";
 import type {
   CertificationStatus,
   CertStatusChangeMessage,
@@ -135,6 +136,15 @@ export function useCertificationCache<T = unknown>(
   const notifyStatusChange = useCallback(
     (toStatus: CertificationStatus) => {
       broadcastCertStatusChange(certId, toStatus, status);
+      void appendAuditEntry({
+        certId,
+        previousState: status,
+        newState: toStatus,
+        signer: "dashboard",
+      }).catch(() => {
+        // Audit persistence is best-effort so cache invalidation remains reliable
+        // in test, SSR, or locked-down browser contexts without IndexedDB.
+      });
     },
     [certId, status]
   );
