@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import { OfflineBanner } from "@/src/components/layout/OfflineBanner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,6 +18,19 @@ export const metadata: Metadata = {
   title: "AgriTrust Protocol",
   description:
     "Decentralized agricultural trust fund management on Stellar Soroban",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "AgriTrust",
+  },
+  icons: {
+    apple: "/icons/icon-192.png",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#1A7D36",
 };
 
 export default function RootLayout({
@@ -29,6 +43,8 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        {/* Offline status banner — renders above all content when offline */}
+        <OfflineBanner />
         <Providers>{children}</Providers>
       </body>
     </html>
