@@ -59,12 +59,12 @@ export function useWallet(): UseWalletSyncReturn {
     defaultWalletStore.getServerSnapshot,
   );
 
-  // Determine the effective account: prefer remote if it's newer than local
+  // Determine the effective account and status: prefer remote if it's newer than local
   const localTimestamp = defaultWalletStore.getSnapshot().lastUpdated;
-  const effectiveAccount =
-    remoteState.lastUpdated > localTimestamp
-      ? remoteState.account
-      : ctx.account;
+  const isRemoteNewer = remoteState.lastUpdated > localTimestamp;
+
+  const effectiveAccount = isRemoteNewer ? remoteState.account : ctx.account;
+  const effectiveStatus = isRemoteNewer ? remoteState.status : ctx.status;
 
   const activeTabs = tabSync ? tabSync.getActiveTabs().length : 1;
 
