@@ -1,4 +1,4 @@
-import { InspectionDetail } from "@/src/pages/inspector/InspectionDetail";
+import { InspectionDetail } from "@/src/components/inspector/InspectionDetail";
 
 interface PageProps { params: Promise<{ inspectionId: string }> | { inspectionId: string }; }
 
