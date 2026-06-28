@@ -11,7 +11,6 @@ import { useState, useCallback, useEffect } from "react";
 import type { ProviderMetadata } from "@/src/types/wallet";
 import {
   getStrategyRegistry,
-  type StrategyRegistry,
 } from "@/src/services/wallet/strategyRegistry";
 
 interface WalletSelectorProps {
@@ -28,18 +27,25 @@ export function WalletSelector({
   onError,
   className,
 }: WalletSelectorProps) {
-  const [available, setAvailable] = useState<ProviderMetadata[]>([]);
+  const [available, setAvailable] = useState<ProviderMetadata[]>(() => {
+    // Discover providers on initial render (synchronously)
+    const registry = getStrategyRegistry();
+    return registry.discoverProviders();
+  });
   const [connecting, setConnecting] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const refreshProviders = useCallback(() => {
-    const registry = getStrategyRegistry();
-    setAvailable(registry.discoverProviders());
-  }, []);
-
   useEffect(() => {
-    refreshProviders();
-  }, [refreshProviders]);
+    // Still refresh on mount in case some were detected late,
+    // but the lazy initializer covers the immediate case.
+    // Use an async boundary to avoid the synchronous setState warning.
+    const refresh = async () => {
+      await Promise.resolve();
+      const registry = getStrategyRegistry();
+      setAvailable(registry.discoverProviders());
+    };
+    refresh();
+  }, []);
 
   const handleSelect = useCallback(
     async (provider: ProviderMetadata) => {

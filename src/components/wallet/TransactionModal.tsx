@@ -60,17 +60,23 @@ export function TransactionModal({
 
   // Format fee display with USD conversion
   useEffect(() => {
-    if (simulation.result && simulation.exchangeRate) {
-      formatStroopsDual(simulation.result.minResourceFee, simulation.exchangeRate)
-        .then(setFeeDisplay)
-        .catch(() => {
-          if (simulation.result) {
+    let mounted = true;
+    const updateFee = async () => {
+      if (simulation.result && simulation.exchangeRate) {
+        try {
+          const display = await formatStroopsDual(simulation.result.minResourceFee, simulation.exchangeRate);
+          if (mounted) setFeeDisplay(display);
+        } catch {
+          if (mounted && simulation.result) {
             setFeeDisplay(formatStroops(simulation.result.minResourceFee) + ' XLM');
           }
-        });
-    } else if (simulation.result) {
-      setFeeDisplay(formatStroops(simulation.result.minResourceFee) + ' XLM');
-    }
+        }
+      } else if (simulation.result) {
+        if (mounted) setFeeDisplay(formatStroops(simulation.result.minResourceFee) + ' XLM');
+      }
+    };
+    updateFee();
+    return () => { mounted = false; };
   }, [simulation.result, simulation.exchangeRate]);
 
   if (!isOpen) return null;

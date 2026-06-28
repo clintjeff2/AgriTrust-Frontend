@@ -62,7 +62,20 @@ export function useOfflineSync() {
   }, [refreshStats]);
 
   useEffect(() => {
-    refreshStats();
+    let mounted = true;
+
+    const init = async () => {
+      // Yield to next microtask to avoid synchronous setState in effect
+      await Promise.resolve();
+      if (!mounted) return;
+
+      await refreshStats();
+      if (mounted && typeof navigator !== "undefined" && navigator.onLine) {
+        await runSync();
+      }
+    };
+
+    init();
 
     const handleOnline = () => {
       setState((prev) => ({ ...prev, isOnline: true }));
@@ -75,9 +88,8 @@ export function useOfflineSync() {
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
 
-    if (navigator.onLine) runSync();
-
     return () => {
+      mounted = false;
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
     };

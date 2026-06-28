@@ -136,7 +136,7 @@ export class Decimal {
     
     // Handle carry-over from rounding
     let finalInteger = integerPart;
-    let finalFraction = rounded.fraction;
+    const finalFraction = rounded.fraction;
     
     if (rounded.carry) {
       finalInteger = this.addOne(integerPart);

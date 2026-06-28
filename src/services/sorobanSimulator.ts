@@ -132,7 +132,10 @@ function buildTransactionXDR(params: SimulateTransactionParams): string {
 /**
  * Parses simulation result from RPC response
  */
-function parseSimulationResult(result: any): SimulationResult {
+function parseSimulationResult(result: {
+  cost?: { minResourceFee?: string; cpuInsns?: number | string };
+  footprint?: { readBytes?: number | string; writeBytes?: number | string; readEntries?: number | string; writeEntries?: number | string }
+}): SimulationResult {
   const cost = result.cost || {};
   const footprint = result.footprint || {};
   

@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient, type QueryKey } from "@tanstack/react-query";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 /**
  * Context returned by onMutate for rollback in onError.
@@ -82,7 +82,7 @@ export function useOptimisticMutation<TData, TVariables>({
 }: UseOptimisticMutationOptions<TData, TVariables>) {
   const queryClient = useQueryClient();
   // Stores the most recent optimisticId for external tracking.
-  const optimisticIdRef = useRef<string | null>(null);
+  const [optimisticId, setOptimisticId] = useState<string | null>(null);
 
   const mutation = useMutation<TData, Error, TVariables, OptimisticMutationContext<TData>>({
     mutationFn,
@@ -90,7 +90,7 @@ export function useOptimisticMutation<TData, TVariables>({
     onMutate: async (variables): Promise<OptimisticMutationContext<TData>> => {
       // Generate a unique optimisticId for THIS mutation call (UUID v4 per the spec).
       const callOptimisticId = propOptimisticId ?? generateOptimisticId();
-      optimisticIdRef.current = callOptimisticId;
+      setOptimisticId(callOptimisticId);
 
       // Cancel any in-flight queries for this query key so they don't
       // overwrite our optimistic update.
@@ -137,7 +137,7 @@ export function useOptimisticMutation<TData, TVariables>({
   return {
     ...mutation,
     /** The most recent per-call optimisticId (null if no mutation has been triggered yet). */
-    optimisticId: optimisticIdRef.current,
+    optimisticId: optimisticId,
   };
 }
 

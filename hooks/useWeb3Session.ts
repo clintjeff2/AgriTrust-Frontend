@@ -9,8 +9,6 @@ import { queryClient } from "@/lib/queryClient";
 import {
   authApi,
   setAccessToken,
-  getAccessToken,
-  type SessionResponse,
 } from "@/lib/apiClient";
 
 // ─── Auth status types ───────────────────────────────────────────────
@@ -129,6 +127,30 @@ export function useWeb3Session({
   const isLoginInProgress = useRef(false);
   const handleSessionCleanupRef = useRef<() => void>(() => {});
 
+  const stopPingLoop = useCallback(() => {
+    if (pingIntervalRef.current) {
+      clearInterval(pingIntervalRef.current);
+      pingIntervalRef.current = null;
+    }
+  }, []);
+
+  const startPingLoop = useCallback(() => {
+    stopPingLoop();
+    pingIntervalRef.current = setInterval(async () => {
+      try {
+        await authApi.ping();
+      } catch (err) {
+        const apiErr = err as { status?: number };
+        if (apiErr.status === 401) {
+          setStatus("expired");
+          stopPingLoop();
+          // Use ref to always get the latest handleSessionCleanup
+          handleSessionCleanupRef.current();
+        }
+      }
+    }, SESSION_PING_INTERVAL_MS);
+  }, [stopPingLoop]);
+
   // ── Mount: check for existing session ──────────────────────────────
 
   useEffect(() => {
@@ -164,35 +186,9 @@ export function useWeb3Session({
       cancelled = true;
     };
     // Only run on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [startPingLoop]);
 
   // ── Keep handleSessionCleanupRef updated for use in stale closure contexts ──
-
-  const startPingLoop = useCallback(() => {
-    stopPingLoop();
-    pingIntervalRef.current = setInterval(async () => {
-      try {
-        await authApi.ping();
-      } catch (err) {
-        const apiErr = err as { status?: number };
-        if (apiErr.status === 401) {
-          setStatus("expired");
-          stopPingLoop();
-          // Use ref to always get the latest handleSessionCleanup
-          handleSessionCleanupRef.current();
-        }
-      }
-    }, SESSION_PING_INTERVAL_MS);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const stopPingLoop = useCallback(() => {
-    if (pingIntervalRef.current) {
-      clearInterval(pingIntervalRef.current);
-      pingIntervalRef.current = null;
-    }
-  }, []);
 
   // ── login() — challenge-signing flow ───────────────────────────────
 
@@ -312,7 +308,9 @@ export function useWeb3Session({
   }, [onSessionExpired, stopPingLoop]);
 
   // Keep ref updated so stale closures (e.g. setInterval) get the latest version
-  handleSessionCleanupRef.current = handleSessionCleanup;
+  useEffect(() => {
+    handleSessionCleanupRef.current = handleSessionCleanup;
+  }, [handleSessionCleanup]);
 
   // ── Event handlers (session expiry, account change) ────────────────
 

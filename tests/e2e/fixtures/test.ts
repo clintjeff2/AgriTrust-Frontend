@@ -5,6 +5,7 @@ interface CustomFixtures {
   mockWallet: MockWallet;
 }
 
+/* eslint-disable react-hooks/rules-of-hooks */
 export const test = base.extend<CustomFixtures>({
   mockWallet: async ({}, use) => {
     const wallet = await createMockWallet();
@@ -13,7 +14,7 @@ export const test = base.extend<CustomFixtures>({
   page: async ({ page, mockWallet }, use) => {
     await page.addInitScript((walletInfo) => {
       // Inject window.freighter
-      (window as any).freighter = {
+      (window as Window & typeof globalThis & { freighter: unknown }).freighter = {
         isConnected: async () => {
           console.log('CALL freighter.isConnected');
           return true;
@@ -43,7 +44,7 @@ export const test = base.extend<CustomFixtures>({
       // Inject window.ethereum (MetaMask)
       const mockEthereum = {
         isMetaMask: true,
-        request: async ({ method, params }: { method: string; params?: any[] }) => {
+        request: async ({ method, params }: { method: string; params?: unknown[] }) => {
           console.log('CALL ethereum.request', method, params);
           switch (method) {
             case 'eth_requestAccounts':
@@ -59,14 +60,14 @@ export const test = base.extend<CustomFixtures>({
               throw new Error(`Unsupported method: ${method}`);
           }
         },
-        on: (event: string, handler: (...args: any[]) => void) => {
+        on: (event: string, _handler: (...args: unknown[]) => void) => {
           console.log('CALL ethereum.on', event);
         },
-        removeListener: (event: string, handler: (...args: any[]) => void) => {
+        removeListener: (event: string, _handler: (...args: unknown[]) => void) => {
           console.log('CALL ethereum.removeListener', event);
         }
       };
-      (window as any).ethereum = mockEthereum;
+      (window as Window & typeof globalThis & { ethereum: unknown }).ethereum = mockEthereum;
     }, {
       address: mockWallet.address,
       publicKey: mockWallet.publicKey,

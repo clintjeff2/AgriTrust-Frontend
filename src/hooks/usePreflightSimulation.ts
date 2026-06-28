@@ -116,7 +116,12 @@ export function usePreflightSimulation(
   // Auto-simulate on mount if enabled
   useEffect(() => {
     if (autoSimulate && state === 'idle') {
-      simulate();
+      // Use a microtask to avoid synchronous setState inside useEffect
+      const triggerSimulate = async () => {
+        await Promise.resolve();
+        await simulate();
+      };
+      triggerSimulate();
     }
   }, [autoSimulate, simulate, state]);
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { InternationalizedText } from "@/src/components/common/InternationalizedText";
 
 function useLoadingProgress() {
@@ -13,7 +13,9 @@ function useLoadingProgress() {
     );
     if (chunks.length > 0) {
       const loaded = chunks.filter((e) => e.responseEnd > 0).length;
-      setProgress(Math.min((loaded / Math.max(chunks.length, 1)) * 100, 100));
+      const initialProgress = Math.min((loaded / Math.max(chunks.length, 1)) * 100, 100);
+      // Yield to avoid synchronous setState in effect
+      Promise.resolve().then(() => setProgress(initialProgress));
     }
     const timer = setInterval(() => {
       setProgress((p) => Math.min(p + 5, 95));

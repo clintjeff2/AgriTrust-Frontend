@@ -14,8 +14,8 @@ export const TrustBadge: React.FC<TrustBadgeProps> = ({ certificateId, initialSc
 
   const { subscribeToUpdates } = useCertificateVerification(certificateId);
 
-  const debounceTimerRef = useRef<any>(null);
-  const settleTimerRef = useRef<any>(null);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const latestScoreRef = useRef(initialScore);
 
   useEffect(() => {

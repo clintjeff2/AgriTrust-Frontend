@@ -60,27 +60,27 @@ export default function PayoutBreakdown({
   const displayTitle = title ?? t("payout.title");
   // Convert base price to Decimal for calculation
   const basePriceStr = typeof basePrice === "bigint" ? basePrice.toString() : basePrice;
-  let runningTotal = new Decimal(basePriceStr, 7);
+  const initialBase = new Decimal(basePriceStr, 7);
 
   // Calculate final total using precise decimal arithmetic
-  const calculatedAdjustments = adjustments.map((item) => {
+  const { calculatedAdjustments, total } = adjustments.reduce((acc, item) => {
     const amountStr = typeof item.amount === "bigint" ? item.amount.toString() : item.amount;
     const decimal = new Decimal(amountStr, 7);
+    const newTotal = item.type === "addition" ? acc.total.add(decimal) : acc.total.sub(decimal);
 
-    if (item.type === "addition") {
-      runningTotal = runningTotal.add(decimal);
-    } else {
-      runningTotal = runningTotal.sub(decimal);
-    }
-
-    return {
+    acc.calculatedAdjustments.push({
       ...item,
       formattedAmount: decimal.format(precision),
-    };
+    });
+    acc.total = newTotal;
+    return acc;
+  }, {
+    calculatedAdjustments: [] as (PayoutLineItem & { formattedAmount: string })[],
+    total: initialBase
   });
 
-  const formattedBasePrice = new Decimal(basePriceStr, 7).format(precision);
-  const formattedTotal = runningTotal.format(precision);
+  const formattedBasePrice = initialBase.format(precision);
+  const formattedTotal = total.format(precision);
 
   return (
     <div
