@@ -18,6 +18,7 @@ type WalletStatus = "connected" | "disconnected" | "connecting" | "approving" | 
 export interface UseWalletSyncReturn {
   account: string | null;
   status: WalletStatus;
+  chainId: string | null;
   isSwitching: boolean;
   provider: WalletProvider;
   connect: (p?: WalletProvider) => Promise<void>;
@@ -58,18 +59,19 @@ export function useWallet(): UseWalletSyncReturn {
     defaultWalletStore.getServerSnapshot,
   );
 
-  // Determine the effective account: prefer remote if it's newer than local
+  // Determine the effective account and status: prefer remote if it's newer than local
   const localTimestamp = defaultWalletStore.getSnapshot().lastUpdated;
-  const effectiveAccount =
-    remoteState.lastUpdated > localTimestamp
-      ? remoteState.account
-      : ctx.account;
+  const isRemoteNewer = remoteState.lastUpdated > localTimestamp;
+
+  const effectiveAccount = isRemoteNewer ? remoteState.account : ctx.account;
+  const effectiveStatus = isRemoteNewer ? remoteState.status : ctx.status;
 
   const activeTabs = tabSync ? tabSync.getActiveTabs().length : 1;
 
   return {
     account: effectiveAccount,
-    status: ctx.isSwitching ? "reconnecting" : remoteState.status || ctx.status,
+    status: effectiveStatus,
+    chainId: remoteState.chainId,
     isSwitching: ctx.isSwitching,
     provider: ctx.provider,
     connect: ctx.connect,
